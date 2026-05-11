@@ -442,7 +442,7 @@
     }
     .nav-pill{
       position:absolute;
-      top:6px;
+      top:0;
       left:0;
       z-index:0;
       width:calc((100% - 28px) / 3);
@@ -608,7 +608,18 @@ const processedThumbMap = {};
 const slideState = {};
 const KEY = 'pretty_back_checkin_history_v3';
 
-function history(){return JSON.parse(localStorage.getItem(KEY) || '[]')}
+function history(){
+  const raw = localStorage.getItem(KEY);
+  if(!raw) return [];
+  try{
+    const parsed = JSON.parse(raw);
+    if(Array.isArray(parsed)) return parsed;
+  } catch (error){
+    console.warn('打卡记录解析失败，已回退为空列表。', error);
+  }
+  localStorage.removeItem(KEY);
+  return [];
+}
 function saveHistory(arr){localStorage.setItem(KEY, JSON.stringify(arr))}
 function getRecord(date){return history().find(r=>r.date===date)}
 function clamp(num, min, max){return Math.max(min, Math.min(max, num))}
@@ -1022,10 +1033,25 @@ const appScroll = document.getElementById('appScroll');
 const navPill = document.getElementById('navPill');
 const navButtons = Array.from(document.querySelectorAll('.nav-btn'));
 const pages = Array.from(document.querySelectorAll('.page'));
-let lastCheckinGestureAt = 0;
+const gestureTimes = new Map();
 
 function getActivePageName(){
   return document.querySelector('.nav-btn.active')?.dataset.page || 'workout';
+}
+
+function getActivePageId(){
+  return document.querySelector('.page.active')?.id || 'page-workout';
+}
+
+function getNavButtonByPage(pageName){
+  return navButtons.find(btn=>btn.dataset.page === pageName) || null;
+}
+
+function runGestureOnce(key, callback, windowMs = 260){
+  const now = Date.now();
+  if(now - (gestureTimes.get(key) || 0) < windowMs) return;
+  gestureTimes.set(key, now);
+  callback();
 }
 
 function refreshPageState(pageName = getActivePageName()){
@@ -1041,31 +1067,62 @@ function refreshPageState(pageName = getActivePageName()){
 }
 
 function handleCheckinGesture(event){
-  if(event?.type === 'pointerup'){
-    if(event.pointerType === 'mouse') return;
+  if(event?.type === 'keydown'){
+    if(event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    lastCheckinGestureAt = Date.now();
+  }
+  if(event?.type === 'pointerup' || event?.type === 'mouseup' || event?.type === 'touchend'){
+    event.preventDefault();
+  }
+  runGestureOnce('checkin-toggle', ()=>{
     toggleTodayCheckin();
-    return;
-  }
-  if(event?.type === 'click' && Date.now() - lastCheckinGestureAt < 480){
-    return;
-  }
-  toggleTodayCheckin();
+  });
 }
 
-function updateNavPill(targetBtn = document.querySelector('.nav-btn.active')){
-  if(!navPill || !targetBtn) return;
-  const hostRect = navPill.parentElement.getBoundingClientRect();
-  const targetRect = targetBtn.getBoundingClientRect();
-  if(!targetRect.width) return;
-  navPill.style.width = `${targetRect.width}px`;
-  navPill.style.height = `${targetRect.height}px`;
-  navPill.style.transform = `translateX(${Math.round(targetRect.left - hostRect.left)}px)`;
+function handleNavGesture(event){
+  const btn = event?.currentTarget;
+  if(!btn) return;
+  if(event?.type === 'keydown'){
+    if(event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+  }
+  if(event?.type === 'pointerup' || event?.type === 'mouseup' || event?.type === 'touchend'){
+    event.preventDefault();
+  }
+  runGestureOnce(`nav-${btn.dataset.page}`, ()=>{
+    setActivePage(btn.dataset.page);
+  });
 }
 
-function setActivePage(pageName){
-  const activeBtn = navButtons.find(btn=>btn.dataset.page === pageName);
+function handleCalendarDate(date){
+  selectedDate = date;
+  renderCalendar();
+  showDetail(date);
+}
+
+function handleDelegatedInteraction(event){
+  const checkinTarget = event.target.closest?.('#checkinBtn');
+  if(checkinTarget){
+    handleCheckinGesture(event);
+    return;
+  }
+
+  const navTarget = event.target.closest?.('.nav-btn');
+  if(navTarget){
+    handleNavGesture({...event, currentTarget: navTarget});
+    return;
+  }
+
+  const dayTarget = event.target.closest?.('.day[data-date]');
+  if(dayTarget){
+    event.preventDefault();
+    handleCalendarDate(dayTarget.dataset.date);
+  }
+}
+
+function syncNavFromActivePage(){
+  const activePageName = getActivePageId().replace('page-', '');
+  const activeBtn = getNavButtonByPage(activePageName) || getNavButtonByPage('workout');
   if(!activeBtn) return;
   navButtons.forEach(btn=>{
     const isActive = btn === activeBtn;
@@ -1073,37 +1130,67 @@ function setActivePage(pageName){
     if(isActive) btn.setAttribute('aria-current', 'page');
     else btn.removeAttribute('aria-current');
   });
+  updateNavPill(activeBtn);
+}
+
+function updateNavPill(targetBtn = getNavButtonByPage(getActivePageId().replace('page-', '')) || document.querySelector('.nav-btn.active')){
+  if(!navPill || !targetBtn) return;
+  if(!targetBtn.offsetWidth) return;
+  navPill.style.width = `${targetBtn.offsetWidth}px`;
+  navPill.style.height = `${targetBtn.offsetHeight}px`;
+  navPill.style.transform = `translate(${targetBtn.offsetLeft}px, ${targetBtn.offsetTop}px)`;
+}
+
+function setActivePage(pageName){
+  const activeBtn = getNavButtonByPage(pageName);
+  if(!activeBtn) return;
   pages.forEach(page=>page.classList.toggle('active', page.id === `page-${pageName}`));
   refreshPageState(pageName);
-  updateNavPill(activeBtn);
+  syncNavFromActivePage();
   if(appScroll) appScroll.scrollTo({top:0, behavior:'smooth'});
 }
+
+const pageObserver = new MutationObserver(()=>{
+  requestAnimationFrame(()=>syncNavFromActivePage());
+});
+pages.forEach(page=>{
+  pageObserver.observe(page, {attributes:true, attributeFilter:['class']});
+});
 
 const checkinBtn = document.getElementById('checkinBtn');
 if(checkinBtn){
   checkinBtn.addEventListener('pointerup', handleCheckinGesture);
+  checkinBtn.addEventListener('mouseup', handleCheckinGesture);
+  checkinBtn.addEventListener('touchend', handleCheckinGesture, {passive:false});
   checkinBtn.addEventListener('click', handleCheckinGesture);
+  checkinBtn.addEventListener('keydown', handleCheckinGesture);
 }
 
 navButtons.forEach(btn=>{
-  btn.addEventListener('click', ()=>setActivePage(btn.dataset.page));
+  btn.addEventListener('pointerup', handleNavGesture);
+  btn.addEventListener('mouseup', handleNavGesture);
+  btn.addEventListener('touchend', handleNavGesture, {passive:false});
+  btn.addEventListener('click', handleNavGesture);
+  btn.addEventListener('keydown', handleNavGesture);
 });
+document.addEventListener('click', handleDelegatedInteraction, true);
 
-window.addEventListener('resize', ()=>requestAnimationFrame(()=>updateNavPill()), {passive:true});
+window.addEventListener('resize', ()=>requestAnimationFrame(()=>syncNavFromActivePage()), {passive:true});
 if(window.visualViewport){
-  window.visualViewport.addEventListener('resize', ()=>requestAnimationFrame(()=>updateNavPill()), {passive:true});
+  window.visualViewport.addEventListener('resize', ()=>requestAnimationFrame(()=>syncNavFromActivePage()), {passive:true});
 }
 window.addEventListener('pageshow', ()=>{
   syncViewportHeight();
   refreshPageState();
-  requestAnimationFrame(()=>updateNavPill());
+  requestAnimationFrame(()=>syncNavFromActivePage());
 });
 document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState !== 'visible') return;
   syncViewportHeight();
   refreshPageState();
-  requestAnimationFrame(()=>updateNavPill());
+  requestAnimationFrame(()=>syncNavFromActivePage());
 });
+document.addEventListener('DOMContentLoaded', ()=>requestAnimationFrame(()=>syncNavFromActivePage()));
 
 let viewMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 let selectedDate = todayStr;
@@ -1113,12 +1200,12 @@ function changeMonth(delta){
   renderCalendar();
 }
 
-function renderCalendar(){
+function renderCalendarGrid(records){
   const y = viewMonth.getFullYear();
   const m = viewMonth.getMonth();
   document.getElementById('monthTitle').textContent = `${y}年${m + 1}月`;
   const daysEl = document.getElementById('days');
-  const map = new Map(history().map(record=>[record.date, record]));
+  const map = new Map(records.map(record=>[record.date, record]));
   const first = new Date(y, m, 1);
   let firstDay = first.getDay();
   firstDay = firstDay === 0 ? 7 : firstDay;
@@ -1145,15 +1232,28 @@ function renderCalendar(){
     const record = map.get(key);
     const el = document.createElement('div');
     el.className = `day ${other ? 'other ' : ''}${key === todayStr ? 'today ' : ''}${key === selectedDate ? 'selected' : ''}`;
+    el.dataset.date = key;
     el.innerHTML = `<div class="day-num">${num}</div><div class="daydot ${record ? 's3' : ''}"></div>`;
-    el.onclick = ()=>{
-      selectedDate = key;
-      renderCalendar();
-      showDetail(key);
-    };
+    el.addEventListener('click', ()=>handleCalendarDate(key));
     daysEl.appendChild(el);
   }
   showDetail(selectedDate);
+}
+
+function renderCalendar(){
+  try{
+    renderCalendarGrid(history());
+  } catch (error){
+    console.warn('日历渲染失败，改用空记录重试。', error);
+    renderCalendarGrid([]);
+  }
+  requestAnimationFrame(()=>{
+    if(document.querySelectorAll('#days .day').length > 0) return;
+    window.setTimeout(()=>{
+      if(document.querySelectorAll('#days .day').length > 0) return;
+      renderCalendarGrid(history());
+    }, 0);
+  });
 }
 
 function showDetail(date){
@@ -1184,9 +1284,10 @@ async function bootstrap(){
   renderCalendar();
   initSwipeCarousels();
   updateProgress();
+  window.__backSafeReady = true;
   requestAnimationFrame(()=>{
     setActivePage('workout');
-    updateNavPill();
+    syncNavFromActivePage();
   });
 }
 
