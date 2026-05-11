@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">护腰打卡图标</title>
+  <desc id="desc">绿色渐变背景上的脊柱曲线、护腰弧线和完成勾。</desc>
+  <defs>
+    <linearGradient id="bg" x1="96" y1="82" x2="914" y2="938" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#064E3B"/>
+      <stop offset=".48" stop-color="#059669"/>
+      <stop offset="1" stop-color="#22D3A6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="74%" cy="20%" r="58%">
+      <stop offset="0" stop-color="#A7F3D0" stop-opacity=".62"/>
+      <stop offset=".48" stop-color="#34D399" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#0F766E" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#022C22" flood-opacity=".28"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <circle cx="808" cy="164" r="300" fill="url(#glow)"/>
+  <circle cx="164" cy="846" r="260" fill="#0EA5E9" opacity=".12"/>
+  <path d="M176 714C260 780 354 812 458 812" fill="none" stroke="#D1FAE5" stroke-width="42" stroke-linecap="round" opacity=".46"/>
+  <path d="M848 714C764 780 670 812 566 812" fill="none" stroke="#D1FAE5" stroke-width="42" stroke-linecap="round" opacity=".46"/>
+
+  <g filter="url(#softShadow)">
+    <path d="M512 194C424 292 642 365 512 500C390 626 600 704 512 830" fill="none" stroke="#F8FAFC" stroke-width="78" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M512 194C424 292 642 365 512 500C390 626 600 704 512 830" fill="none" stroke="#BBF7D0" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>
+  </g>
+
+  <g fill="#064E3B" opacity=".95">
+    <circle cx="512" cy="278" r="24"/>
+    <circle cx="536" cy="390" r="20"/>
+    <circle cx="498" cy="512" r="20"/>
+    <circle cx="528" cy="630" r="20"/>
+    <circle cx="508" cy="748" r="24"/>
+  </g>
+
+  <circle cx="738" cy="746" r="116" fill="#ECFDF5"/>
+  <circle cx="738" cy="746" r="88" fill="#10B981"/>
+  <path d="M688 744L724 780L794 708" fill="none" stroke="#FFFFFF" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
