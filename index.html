@@ -439,27 +439,88 @@
     .daydot{width:8px;height:8px;border-radius:99px;background:#CBD5E1}
     .daydot.s3{background:#2563EB}
     .detail{
-      margin-top:14px;
-      padding:14px;
-      border:1px solid #E5EAF3;
-      border-radius:22px;
-      background:#F8FAFC;
+      margin-top:18px;
+      padding-top:16px;
+      border-top:1px solid #E8EEF7;
+      background:transparent;
       color:#475569;
       font-size:14px;
       line-height:1.7;
       font-weight:600;
     }
     .detail b{color:#111827}
-    .calendar-plan-header{
-      margin-bottom:14px;
-      padding:18px 18px 16px;
-      border:1px solid #E5EAF3;
-      border-radius:22px;
-      background:#FFF;
+    .detail-hint{
+      padding:13px 14px;
+      border:1px dashed #D8E4F3;
+      border-radius:18px;
+      background:linear-gradient(135deg,rgba(248,250,252,.94),rgba(239,246,255,.66));
+      color:#64748B;
+      font-weight:800;
     }
-    .calendar-plan-date{margin-bottom:8px;font-size:18px;font-weight:900;color:#111827}
-    .calendar-plan-meta{font-size:14px;line-height:1.8;color:#475569;font-weight:700}
-    .calendar-plan-meta strong{color:#111827}
+    .calendar-plan-header{
+      position:relative;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+      padding:14px 14px 14px 17px;
+      overflow:hidden;
+      border:1px solid #E8EEF7;
+      border-radius:22px;
+      background:linear-gradient(135deg,#FFFFFF 0%,#F8FBFF 100%);
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
+    }
+    .calendar-plan-header::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:14px;
+      bottom:14px;
+      width:4px;
+      border-radius:99px;
+      background:#3B82F6;
+    }
+    .calendar-plan-kicker{
+      margin-bottom:4px;
+      color:#64748B;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.12em;
+    }
+    .calendar-plan-date{
+      margin-bottom:5px;
+      color:#111827;
+      font-size:18px;
+      font-weight:950;
+      letter-spacing:-.35px;
+    }
+    .calendar-plan-name{
+      color:#334155;
+      font-size:14px;
+      font-weight:800;
+    }
+    .calendar-plan-status{
+      flex:0 0 auto;
+      padding:7px 10px;
+      border-radius:999px;
+      background:#FEF3C7;
+      color:#92400E;
+      font-size:12px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .calendar-plan-status.done{
+      background:#D1FAE5;
+      color:#047857;
+    }
+    .calendar-section-label{
+      margin:0 2px 10px;
+      color:#111827;
+      font-size:15px;
+      font-weight:950;
+      letter-spacing:-.2px;
+    }
     .calendar-empty{padding:10px 4px;color:#64748B;font-size:14px;font-weight:700}
     .nav{
       position:absolute;
@@ -599,7 +660,7 @@
             </div>
             <div class="week"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
             <div class="days" id="days"></div>
-            <div class="detail" id="dayDetail">点击某一天查看当天训练详情。</div>
+            <div class="detail" id="dayDetail"><div class="detail-hint">点击某一天查看当天训练详情。</div></div>
           </div>
         </section>
       </div>
@@ -1330,15 +1391,18 @@ function renderCalendar(){
 function showDetail(date){
   const record = getRecord(date);
   const plan = planForDate(date);
+  const isDone = Boolean(record);
+  const statusText = isDone ? '已完成今日计划' : '未打卡';
   document.getElementById('dayDetail').innerHTML = `
     <div class="calendar-plan-header">
-      <div class="calendar-plan-date">${date}</div>
-      <div class="calendar-plan-meta">
-        计划：<strong>${plan.name}</strong><br>
-        状态：<strong>${record ? record.note : '未打卡'}</strong><br>
-        当天锻炼项目：
+      <div>
+        <div class="calendar-plan-kicker">当天计划</div>
+        <div class="calendar-plan-date">${date}</div>
+        <div class="calendar-plan-name">${plan.name}</div>
       </div>
+      <div class="calendar-plan-status ${isDone ? 'done' : ''}">${statusText}</div>
     </div>
+    <div class="calendar-section-label">当天锻炼项目</div>
     ${renderCalendarExerciseCards(plan.items)}
   `;
   initSwipeCarousels();
