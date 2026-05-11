@@ -19,7 +19,7 @@
       --motion-fast:240ms;
       --motion-soft:180ms;
       --motion-spring:cubic-bezier(.22,1,.36,1);
-      --app-version:"2026.05.11-a11y-polish";
+      --app-version:"2026.05.11-nav-copy";
     }
     html,body{
       height:100%;
@@ -638,20 +638,30 @@
       position:relative;
       z-index:1;
       height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       border:none;
       border-radius:17px;
       background:transparent;
-      color:#64748B;
-      font-size:14px;
-      font-weight:900;
+      color:#6B7A90;
+      font-size:15px;
+      font-weight:850;
+      letter-spacing:.06em;
+      line-height:1;
       cursor:pointer;
       touch-action:manipulation;
       transition:
         color var(--motion-soft) ease,
+        letter-spacing var(--motion-soft) ease,
         transform var(--motion-soft) ease;
     }
     .nav-btn:active{transform:scale(.98)}
-    .nav-btn.active{color:#111827}
+    .nav-btn.active{
+      color:#0F172A;
+      font-weight:950;
+      letter-spacing:.02em;
+    }
     @media (prefers-reduced-motion:reduce){
       *,*::before,*::after{
         animation-duration:.01ms !important;
@@ -746,9 +756,9 @@
       <nav class="nav">
         <div class="nav-inner">
           <span class="nav-pill" id="navPill" aria-hidden="true"></span>
-          <button class="nav-btn active" data-page="workout" type="button" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">今日锻炼</button>
-          <button class="nav-btn" data-page="food" type="button" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">吃什么</button>
-          <button class="nav-btn" data-page="calendar" type="button" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">日历</button>
+          <button class="nav-btn active" data-page="workout" type="button" aria-label="今日锻炼" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">训练</button>
+          <button class="nav-btn" data-page="food" type="button" aria-label="饮食建议" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">饮食</button>
+          <button class="nav-btn" data-page="calendar" type="button" aria-label="日历打卡记录" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">日历</button>
         </div>
       </nav>
     </div>
