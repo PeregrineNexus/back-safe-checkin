@@ -19,7 +19,7 @@
       --motion-fast:240ms;
       --motion-soft:180ms;
       --motion-spring:cubic-bezier(.22,1,.36,1);
-      --app-version:"2026.05.11-b612fd2";
+      --app-version:"2026.05.11-a11y-polish";
     }
     html,body{
       height:100%;
@@ -217,10 +217,16 @@
       box-shadow:0 18px 38px rgba(37,99,235,.10);
     }
     .exercise-top{
+      width:100%;
       display:flex;
       align-items:center;
       gap:14px;
       padding:16px;
+      border:none;
+      background:transparent;
+      color:inherit;
+      font:inherit;
+      text-align:left;
       cursor:pointer;
       -webkit-tap-highlight-color:transparent;
       transition:background var(--motion-soft) ease;
@@ -254,7 +260,7 @@
     .thumb > img{width:100%;height:100%;object-fit:cover;display:block}
     .exercise-info{flex:1;min-width:0}
     .exercise-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .exercise-title{margin:0;font-size:19px;font-weight:900;letter-spacing:-.3px}
+    .exercise-title{display:block;font-size:19px;font-weight:900;letter-spacing:-.3px}
     .chevron{
       width:28px;
       height:28px;
@@ -423,6 +429,8 @@
     .week div{padding-bottom:4px;color:#94A3B8;font-size:12px;font-weight:800;text-align:center}
     .day{
       position:relative;
+      appearance:none;
+      -webkit-appearance:none;
       min-height:54px;
       display:flex;
       flex-direction:column;
@@ -431,6 +439,9 @@
       border:1px solid #EDF1F6;
       border-radius:16px;
       background:#F8FAFC;
+      color:inherit;
+      font:inherit;
+      text-align:left;
       cursor:pointer;
       transition:
         background var(--motion-soft) ease,
@@ -487,6 +498,15 @@
       width:22px;
       background:#34D399;
       box-shadow:0 3px 8px rgba(52,211,153,.32);
+    }
+    .checkin:focus-visible,
+    .mini-btn:focus-visible,
+    .nav-btn:focus-visible,
+    .exercise-top:focus-visible,
+    .carousel-btn:focus-visible,
+    .day:focus-visible{
+      outline:3px solid rgba(37,99,235,.34);
+      outline-offset:3px;
     }
     .detail{
       margin-top:18px;
@@ -632,6 +652,14 @@
     }
     .nav-btn:active{transform:scale(.98)}
     .nav-btn.active{color:#111827}
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        scroll-behavior:auto !important;
+        transition-duration:.01ms !important;
+      }
+    }
     @media (max-width:380px){
       .summary-main{flex-direction:column}
       .summary-side{flex-direction:row;justify-content:space-between;align-items:center}
@@ -710,7 +738,7 @@
             </div>
             <div class="week"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
             <div class="days" id="days"></div>
-            <div class="detail" id="dayDetail"><div class="detail-hint">点击某一天查看当天训练详情。</div></div>
+            <div class="detail" id="dayDetail" aria-live="polite"><div class="detail-hint">点击某一天查看当天训练详情。</div></div>
           </div>
         </section>
       </div>
@@ -1037,12 +1065,12 @@ function planForDate(dateStr){
 function renderExerciseCard(item, context){
   const cardKey = `${context}-${item.id}`;
   return `
-    <article class="exercise ${context === 'calendar' ? 'calendar-exercise' : ''}" id="card-${cardKey}">
-      <div class="exercise-top" onclick="toggleExerciseCard('${cardKey}')">
+    <article class="exercise ${context === 'calendar' ? 'calendar-exercise' : ''}" id="card-${cardKey}" aria-labelledby="title-${cardKey}">
+      <button class="exercise-top" type="button" aria-expanded="false" aria-controls="body-${cardKey}" onclick="toggleExerciseCard('${cardKey}')">
         <div class="thumb">${renderThumbPhoto(item.id)}</div>
         <div class="exercise-info">
           <div class="exercise-title-row">
-            <h3 class="exercise-title">${item.title}</h3>
+            <span class="exercise-title" id="title-${cardKey}">${item.title}</span>
             <span class="chevron" id="chev-${cardKey}" aria-hidden="true">
               <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <path d="M5.25 7.75L10 12.25L14.75 7.75" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -1056,8 +1084,8 @@ function renderExerciseCard(item, context){
             <span class="chip">${item.point}</span>
           </div>
         </div>
-      </div>
-      <div class="exercise-body">
+      </button>
+      <div class="exercise-body" id="body-${cardKey}">
         <div class="exercise-body-inner">
           <div class="carousel">
             <div class="photo-frame" data-carousel-id="${cardKey}" data-total="${item.slides.length}">
@@ -1147,7 +1175,9 @@ function initSwipeCarousels(){
 function toggleExerciseCard(cardKey){
   const card = document.getElementById(`card-${cardKey}`);
   if(!card) return;
-  card.classList.toggle('open');
+  const isOpen = card.classList.toggle('open');
+  const trigger = card.querySelector('.exercise-top');
+  if(trigger) trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
 function updateProgress(){
@@ -1266,9 +1296,11 @@ function handleNavGesture(event){
 }
 
 function handleCalendarDate(date){
-  selectedDate = date;
-  renderCalendar();
-  showDetail(date);
+  runGestureOnce(`calendar-date-${date}`, ()=>{
+    selectedDate = date;
+    renderCalendar();
+    showDetail(date);
+  }, 160);
 }
 
 function handleDelegatedInteraction(event){
@@ -1407,10 +1439,12 @@ function renderCalendarGrid(records){
     }
     const key = formatLocalDate(dateObj);
     const record = map.get(key);
-    const el = document.createElement('div');
+    const el = document.createElement('button');
     el.className = `day ${other ? 'other ' : ''}${record ? 'checked ' : ''}${key === todayStr ? 'today ' : ''}${key === selectedDate ? 'selected' : ''}`;
+    el.type = 'button';
     el.dataset.date = key;
-    el.setAttribute('aria-label', `${key}${record ? '，已完成打卡' : '，未打卡'}`);
+    el.setAttribute('aria-label', `${key}${key === selectedDate ? '，当前查看' : ''}${record ? '，已完成打卡' : '，未打卡'}`);
+    if(key === todayStr) el.setAttribute('aria-current', 'date');
     el.setAttribute('onpointerdown', 'handleCalendarDate(this.dataset.date)');
     el.setAttribute('onmousedown', 'handleCalendarDate(this.dataset.date)');
     el.setAttribute('onclick', 'handleCalendarDate(this.dataset.date)');
