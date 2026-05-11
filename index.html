@@ -7,29 +7,56 @@
   <style>
     *{box-sizing:border-box}
     :root{
-      --text:#111827; --sub:#6B7280; --line:#E5E7EB; --blue:#2563EB; --blue2:#EEF4FF;
-      --green:#10B981; --shadow:0 16px 40px rgba(15,23,42,.08);
+      --app-height:100vh;
+      --nav-offset:94px;
+      --text:#111827;
+      --sub:#6B7280;
+      --line:#E5E7EB;
+      --blue:#2563EB;
+      --blue2:#EEF4FF;
+      --green:#10B981;
+      --shadow:0 16px 40px rgba(15,23,42,.08);
     }
-    html, body{
+    html,body{
       height:100%;
       overflow:hidden;
       overscroll-behavior:none;
     }
     body{
+      position:fixed;
+      inset:0;
       margin:0;
-      background:radial-gradient(circle at 20% 0%, rgba(37,99,235,.12), transparent 32%), linear-gradient(180deg,#F8FAFC 0%,#EEF3FA 100%);
+      width:100%;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(37,99,235,.12), transparent 32%),
+        linear-gradient(180deg,#F8FAFC 0%,#EEF3FA 100%);
       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif;
       color:var(--text);
+      -webkit-font-smoothing:antialiased;
+    }
+    .shell{
+      position:fixed;
+      inset:0;
+      height:var(--app-height);
+      display:flex;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .app-shell{
+      position:relative;
+      width:min(100%,460px);
+      height:100%;
     }
     .app{
-      max-width:460px;
-      height:100dvh;
-      margin:0 auto;
-      padding:18px 16px calc(92px + env(safe-area-inset-bottom));
+      height:100%;
       overflow-y:auto;
+      padding:18px 16px calc(var(--nav-offset) + 22px + env(safe-area-inset-bottom));
+      overscroll-behavior-y:contain;
       -webkit-overflow-scrolling:touch;
+      touch-action:pan-y;
     }
-    .page{display:none}.page.active{display:block}
+    .page{display:none}
+    .page.active{display:block}
     .header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:8px 0 18px}
     .eyebrow{font-size:13px;color:var(--sub);font-weight:700;margin-bottom:6px}
     h1{margin:0;font-size:31px;letter-spacing:-.9px;line-height:1.1}
@@ -37,14 +64,14 @@
     .checkin{
       height:48px;
       padding:0 22px;
-      min-width:120px;
+      min-width:124px;
       border:none;
       border-radius:18px;
       background:linear-gradient(135deg,#3B82F6,#5B8CFF);
       color:#fff;
       font-size:16px;
       font-weight:900;
-      letter-spacing:.5px;
+      letter-spacing:.4px;
       box-shadow:0 14px 30px rgba(59,130,246,.30);
       cursor:pointer;
       transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
@@ -54,183 +81,384 @@
       background:linear-gradient(135deg,#10B981,#34D399);
       box-shadow:0 12px 26px rgba(16,185,129,.24);
     }
-    .summary{background:linear-gradient(135deg,#0F1B46,#2542A1);color:white;border-radius:34px;padding:24px;box-shadow:0 18px 40px rgba(15,23,42,.12);margin-bottom:18px;overflow:hidden;position:relative}
-    .summary:after{content:"";position:absolute;right:-34px;top:-44px;width:164px;height:164px;background:rgba(255,255,255,.10);border-radius:999px}
-    .summary-main{display:flex;justify-content:space-between;align-items:stretch;gap:18px;position:relative;z-index:1}
+    .summary{
+      position:relative;
+      overflow:hidden;
+      margin-bottom:18px;
+      padding:24px;
+      border-radius:34px;
+      background:linear-gradient(135deg,#0F1B46,#2542A1);
+      color:#fff;
+      box-shadow:0 18px 40px rgba(15,23,42,.12);
+    }
+    .summary:after{
+      content:"";
+      position:absolute;
+      right:-34px;
+      top:-44px;
+      width:164px;
+      height:164px;
+      border-radius:999px;
+      background:rgba(255,255,255,.10);
+    }
+    .summary-main{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:stretch;gap:18px}
     .summary-left{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:2px 0 6px}
     .summary-side{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:14px;flex:0 0 auto}
     .summary-title{font-size:15px;color:rgba(255,255,255,.78);font-weight:700}
-    .summary-value{font-size:34px;font-weight:900;margin-top:6px;letter-spacing:-1px}
-    .summary-desc{font-size:14px;line-height:1.7;color:rgba(255,255,255,.82);margin-top:20px;position:relative;z-index:1}
-    .ring{width:80px;height:80px;border-radius:50%;background:conic-gradient(#8EC5FF var(--deg), rgba(255,255,255,.20) 0deg);display:flex;align-items:center;justify-content:center}
-    .ring-inner{width:60px;height:60px;background:#163170;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900}
+    .summary-value{margin-top:6px;font-size:34px;font-weight:900;letter-spacing:-1px}
+    .summary-desc{margin-top:20px;font-size:14px;line-height:1.7;color:rgba(255,255,255,.82)}
+    .ring{
+      width:80px;
+      height:80px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:conic-gradient(#8EC5FF var(--deg), rgba(255,255,255,.20) 0deg);
+    }
+    .ring-inner{
+      width:60px;
+      height:60px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:#163170;
+      font-size:16px;
+      font-weight:900;
+    }
     .section-head{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 12px}
-    h2{font-size:21px;margin:0;letter-spacing:-.4px}
+    h2{margin:0;font-size:21px;letter-spacing:-.4px}
     .section-note{display:none}
-    .exercise-list{display:grid;gap:14px}
-    .exercise{background:rgba(255,255,255,.92);border:1px solid rgba(229,231,235,.88);border-radius:28px;box-shadow:0 12px 30px rgba(15,23,42,.06);overflow:hidden}
-    .exercise-top{padding:16px;display:flex;gap:14px;align-items:center;cursor:pointer}
-    .thumb{width:82px;height:82px;border-radius:24px;background:#F8FBFF;border:1px solid #DDE8F7;display:flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden}
+    .exercise-list,.calendar-exercise-list{display:grid;gap:14px}
+    .exercise{
+      overflow:hidden;
+      border:1px solid rgba(229,231,235,.88);
+      border-radius:28px;
+      background:rgba(255,255,255,.92);
+      box-shadow:0 12px 30px rgba(15,23,42,.06);
+    }
+    .exercise-top{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:16px;
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .thumb{
+      width:82px;
+      height:82px;
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      border:1px solid #DDE8F7;
+      border-radius:24px;
+      background:#F8FBFF;
+    }
     .thumb img{width:100%;height:100%;object-fit:cover;display:block}
     .exercise-info{flex:1;min-width:0}
     .exercise-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .exercise-title{font-size:19px;font-weight:900;letter-spacing:-.3px;margin:0}
+    .exercise-title{margin:0;font-size:19px;font-weight:900;letter-spacing:-.3px}
     .chevron{color:#94A3B8;font-size:22px;font-weight:700}
     .exercise-sub{margin-top:5px;color:var(--sub);font-size:13px;line-height:1.45;font-weight:600}
     .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
-    .chip{border-radius:999px;background:#F3F6FA;color:#475569;font-size:12px;font-weight:800;padding:6px 9px}
+    .chip{padding:6px 9px;border-radius:999px;background:#F3F6FA;color:#475569;font-size:12px;font-weight:800}
     .chip.blue{background:var(--blue2);color:#1D4ED8}
     .exercise-body{display:none;padding:0 16px 16px}
-    .carousel{margin-bottom:14px}
-
     .exercise.open .exercise-body{display:block}
     .carousel{position:relative;margin-bottom:12px}
-    .photo-frame{position:relative;overflow:hidden;border-radius:0;border:none;background:transparent;box-shadow:none;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+    .photo-frame{
+      position:relative;
+      overflow:hidden;
+      border:none;
+      background:transparent;
+      touch-action:pan-y;
+      -webkit-user-select:none;
+      user-select:none;
+    }
     .slides{display:flex;transition:transform .28s ease}
-    .slide{min-width:100%;padding:0}
-    .photo-card{border-radius:24px;overflow:hidden;background:#fff;border:1px solid #E5EAF3;box-shadow:0 10px 22px rgba(15,23,42,.06)}
-    .photo-stage{height:228px;display:flex;align-items:center;justify-content:center;padding:0;background:#fff}
-    .photo-stage img{width:100%;height:100%;object-fit:cover;display:block;background:#fff}
+    .slide{min-width:100%}
+    .photo-card{
+      overflow:hidden;
+      border:1px solid #E5EAF3;
+      border-radius:24px;
+      background:#fff;
+      box-shadow:0 10px 22px rgba(15,23,42,.06);
+    }
+    .photo-stage{
+      position:relative;
+      overflow:hidden;
+      aspect-ratio:4 / 3;
+      background:linear-gradient(180deg,#F8FBFF 0%,#EEF4FF 100%);
+    }
+    .photo-stage img{width:100%;height:100%;object-fit:cover;display:block}
+    .photo-placeholder{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#64748B;
+      font-size:13px;
+      font-weight:700;
+      text-align:center;
+      padding:20px;
+    }
     .caption{padding:12px 14px 14px;background:#fff;border-top:1px solid #E7EDF7}
     .caption-title{font-size:14px;font-weight:900}
-    .caption-sub{font-size:12px;color:#64748B;line-height:1.6;margin-top:4px;font-weight:600}
-    .carousel-btn{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border:none;border-radius:999px;background:rgba(55,65,81,.82);color:#fff;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 6px 16px rgba(15,23,42,.14)}
-    .carousel-btn.prev{left:10px}.carousel-btn.next{right:10px}
+    .caption-sub{margin-top:4px;font-size:12px;line-height:1.6;color:#64748B;font-weight:600}
+    .carousel-btn{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:40px;
+      height:40px;
+      border:none;
+      border-radius:999px;
+      background:rgba(55,65,81,.82);
+      color:#fff;
+      font-size:22px;
+      line-height:1;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(15,23,42,.14);
+    }
+    .carousel-btn.prev{left:10px}
+    .carousel-btn.next{right:10px}
     .dots{display:flex;justify-content:center;gap:7px;margin-top:10px}
     .dot{width:7px;height:7px;border-radius:99px;background:#CBD5E1}
     .dot.active{background:#2563EB}
-    .steps{background:#F8FAFC;border:1px solid #E5EAF3;border-radius:22px;padding:14px;font-size:14px;line-height:1.75;color:#4B5563;font-weight:600}
+    .steps{
+      padding:14px;
+      border:1px solid #E5EAF3;
+      border-radius:22px;
+      background:#F8FAFC;
+      color:#4B5563;
+      font-size:14px;
+      line-height:1.75;
+      font-weight:600;
+    }
     .steps b{color:#111827}
-    .warning{margin-top:10px;background:#FFF7ED;color:#9A3412;border:1px solid #FED7AA;border-radius:18px;padding:12px 14px;font-size:13px;line-height:1.6;font-weight:700}
+    .warning{
+      margin-top:10px;
+      padding:12px 14px;
+      border:1px solid #FED7AA;
+      border-radius:18px;
+      background:#FFF7ED;
+      color:#9A3412;
+      font-size:13px;
+      line-height:1.6;
+      font-weight:700;
+    }
     .food-grid{display:grid;gap:12px}
-    .food-card,.calendar-card{background:white;border:1px solid var(--line);border-radius:26px;padding:16px;box-shadow:0 10px 26px rgba(15,23,42,.05)}
-    .food-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:900;margin-bottom:10px}
-    .food-icon{width:34px;height:34px;border-radius:13px;background:#ECFDF5;display:flex;align-items:center;justify-content:center;color:#059669;font-weight:900}
+    .food-card,.calendar-card{
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:26px;
+      background:#fff;
+      box-shadow:0 10px 26px rgba(15,23,42,.05);
+    }
+    .food-title{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:18px;font-weight:900}
+    .food-icon{
+      width:34px;
+      height:34px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:13px;
+      background:#ECFDF5;
+      color:#059669;
+      font-weight:900;
+    }
     .food-card ul{margin:0;padding-left:20px;color:#4B5563;line-height:1.8;font-size:14px;font-weight:600}
-    .calendar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px}
+    .calendar-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
     .month-title{font-size:20px;font-weight:900}
-    .mini-btn{border:none;background:#F3F6FA;color:#334155;border-radius:14px;padding:9px 11px;font-size:13px;font-weight:800;cursor:pointer}
+    .mini-btn{
+      border:none;
+      border-radius:14px;
+      background:#F3F6FA;
+      color:#334155;
+      padding:9px 11px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+    }
     .week,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-    .week div{color:#94A3B8;font-size:12px;font-weight:800;text-align:center;padding-bottom:4px}
-    .day{min-height:54px;border-radius:16px;background:#F8FAFC;border:1px solid #EDF1F6;padding:7px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
-    .day.other{opacity:.36}.day.today{border-color:#93C5FD;background:#EFF6FF}.day.selected{outline:2px solid var(--blue)}
+    .week div{padding-bottom:4px;color:#94A3B8;font-size:12px;font-weight:800;text-align:center}
+    .day{
+      min-height:54px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      padding:7px;
+      border:1px solid #EDF1F6;
+      border-radius:16px;
+      background:#F8FAFC;
+      cursor:pointer;
+    }
+    .day.other{opacity:.36}
+    .day.today{border-color:#93C5FD;background:#EFF6FF}
+    .day.selected{outline:2px solid var(--blue)}
     .day-num{font-size:12px;font-weight:900}
     .daydot{width:8px;height:8px;border-radius:99px;background:#CBD5E1}
     .daydot.s3{background:#2563EB}
-    .detail{margin-top:14px;border-radius:22px;background:#F8FAFC;border:1px solid #E5EAF3;padding:14px;color:#475569;font-size:14px;line-height:1.7;font-weight:600}
+    .detail{
+      margin-top:14px;
+      padding:14px;
+      border:1px solid #E5EAF3;
+      border-radius:22px;
+      background:#F8FAFC;
+      color:#475569;
+      font-size:14px;
+      line-height:1.7;
+      font-weight:600;
+    }
     .detail b{color:#111827}
-    .calendar-plan-header{background:#FFFFFF;border:1px solid #E5EAF3;border-radius:22px;padding:18px 18px 16px;margin-bottom:14px}
-    .calendar-plan-date{font-size:18px;font-weight:900;color:#111827;margin-bottom:8px}
+    .calendar-plan-header{
+      margin-bottom:14px;
+      padding:18px 18px 16px;
+      border:1px solid #E5EAF3;
+      border-radius:22px;
+      background:#FFF;
+    }
+    .calendar-plan-date{margin-bottom:8px;font-size:18px;font-weight:900;color:#111827}
     .calendar-plan-meta{font-size:14px;line-height:1.8;color:#475569;font-weight:700}
     .calendar-plan-meta strong{color:#111827}
-    .calendar-exercise-list{display:grid;gap:14px}
-    .calendar-exercise .exercise-top{cursor:default}
-    .calendar-exercise .exercise-body{display:block}
-    .calendar-exercise .chevron{display:none}
     .calendar-empty{padding:10px 4px;color:#64748B;font-size:14px;font-weight:700}
     .nav{
-      position:fixed;
+      position:absolute;
       left:0;
       right:0;
       bottom:0;
-      z-index:999;
-      padding:10px 16px calc(10px + env(safe-area-inset-bottom));
-      background:rgba(255,255,255,.9);
-      border-top:1px solid rgba(226,232,240,.9);
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
+      z-index:20;
+      padding:10px 16px calc(12px + env(safe-area-inset-bottom));
+      background:linear-gradient(180deg,rgba(238,243,250,0) 0%, rgba(238,243,250,.86) 18%, rgba(255,255,255,.96) 36%);
       transform:translateZ(0);
-      touch-action:manipulation;
+      -webkit-transform:translateZ(0);
+      pointer-events:none;
     }
     .nav-inner{
-      max-width:460px;
-      margin:0 auto;
       display:grid;
       grid-template-columns:repeat(3,1fr);
       gap:8px;
-      background:#EEF2F7;
       padding:6px;
+      border:1px solid rgba(226,232,240,.95);
       border-radius:22px;
-      overflow:hidden;
+      background:rgba(238,242,247,.92);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      box-shadow:0 10px 24px rgba(15,23,42,.08);
+      pointer-events:auto;
     }
-    .nav-btn{height:46px;border:none;border-radius:17px;background:transparent;color:#64748B;font-size:14px;font-weight:900;cursor:pointer}
-    .nav-btn.active{background:white;color:#111827;box-shadow:0 8px 20px rgba(15,23,42,.08)}
+    .nav-btn{
+      height:46px;
+      border:none;
+      border-radius:17px;
+      background:transparent;
+      color:#64748B;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .nav-btn.active{background:#FFF;color:#111827;box-shadow:0 8px 20px rgba(15,23,42,.08)}
+    @media (max-width:380px){
+      .summary-main{flex-direction:column}
+      .summary-side{flex-direction:row;justify-content:space-between;align-items:center}
+      .summary-value{font-size:30px}
+      .carousel-btn{width:36px;height:36px}
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <section class="page active" id="page-workout">
-      <div class="header">
-        <div>
-          <div class="eyebrow">今日训练</div>
-          <h1 class="date-title" id="dateTitle">5月9日 周六</h1>
-        </div>
-      </div>
-
-      <div class="summary">
-        <div class="summary-main">
-          <div class="summary-left">
+  <div class="shell">
+    <div class="app-shell">
+      <div class="app" id="appScroll">
+        <section class="page active" id="page-workout">
+          <div class="header">
             <div>
-              <div class="summary-title">今日计划</div>
-              <div class="summary-value" id="planName">康复力量 A</div>
+              <div class="eyebrow">今日训练</div>
+              <h1 class="date-title" id="dateTitle">5月9日 周六</h1>
             </div>
-            <div class="summary-desc" id="planDesc">按之前方案自动匹配今天的训练内容。</div>
           </div>
-          <div class="summary-side">
-            <div class="ring" id="ring"><div class="ring-inner" id="ringText">0/5</div></div>
-            <button class="checkin" id="checkinBtn">打卡</button>
+
+          <div class="summary">
+            <div class="summary-main">
+              <div class="summary-left">
+                <div>
+                  <div class="summary-title">今日计划</div>
+                  <div class="summary-value" id="planName">康复力量 A</div>
+                </div>
+                <div class="summary-desc" id="planDesc">按之前方案自动匹配今天的训练内容。</div>
+              </div>
+              <div class="summary-side">
+                <div class="ring" id="ring"><div class="ring-inner" id="ringText">0/5</div></div>
+                <button class="checkin" id="checkinBtn">立即打卡</button>
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div class="section-head">
+            <h2>训练项目</h2>
+            <div class="section-note">支持多图左右轮播</div>
+          </div>
+          <div class="exercise-list" id="exerciseList"></div>
+        </section>
+
+        <section class="page" id="page-food">
+          <div class="header">
+            <div>
+              <div class="eyebrow">减脂饮食建议</div>
+              <h1>今天吃什么</h1>
+            </div>
+          </div>
+          <div class="food-grid">
+            <div class="food-card"><div class="food-title"><span class="food-icon">早</span>早餐</div><ul><li>鸡蛋 2 个 + 无糖豆浆 / 牛奶</li><li>玉米、燕麦或全麦面包任选一种</li><li>避免甜面包、油条、奶茶</li></ul></div>
+            <div class="food-card"><div class="food-title"><span class="food-icon">午</span>午餐</div><ul><li>一掌心蛋白质：鸡肉、鱼虾、牛肉、豆腐</li><li>半碗到一碗米饭</li><li>两拳蔬菜，少油少酱</li></ul></div>
+            <div class="food-card"><div class="food-title"><span class="food-icon">晚</span>晚餐</div><ul><li>鱼虾、豆腐、鸡蛋为主</li><li>大量蔬菜 + 少量主食</li><li>不吃夜宵，不喝酒</li></ul></div>
+            <div class="food-card"><div class="food-title"><span class="food-icon">加</span>加餐</div><ul><li>无糖酸奶、牛奶、水果任选</li><li>坚果控制在一小把以内</li><li>饿了先补蛋白质，不吃零食</li></ul></div>
+          </div>
+        </section>
+
+        <section class="page" id="page-calendar">
+          <div class="header">
+            <div><div class="eyebrow">阶段反馈</div><h1>日历</h1></div>
+          </div>
+          <div class="calendar-card">
+            <div class="calendar-top">
+              <button class="mini-btn" onclick="changeMonth(-1)">上月</button>
+              <div class="month-title" id="monthTitle"></div>
+              <button class="mini-btn" onclick="changeMonth(1)">下月</button>
+            </div>
+            <div class="week"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
+            <div class="days" id="days"></div>
+            <div class="detail" id="dayDetail">点击某一天查看当天训练详情。</div>
+          </div>
+        </section>
       </div>
 
-      <div class="section-head">
-        <h2>训练项目</h2>
-        <div class="section-note">支持多图左右轮播</div>
-      </div>
-      <div class="exercise-list" id="exerciseList"></div>
-    </section>
-
-    <section class="page" id="page-food">
-      <div class="header">
-        <div>
-          <div class="eyebrow">减脂饮食建议</div>
-          <h1>今天吃什么</h1>
+      <nav class="nav">
+        <div class="nav-inner">
+          <button class="nav-btn active" data-page="workout">今日锻炼</button>
+          <button class="nav-btn" data-page="food">吃什么</button>
+          <button class="nav-btn" data-page="calendar">日历</button>
         </div>
-      </div>
-      <div class="food-grid">
-        <div class="food-card"><div class="food-title"><span class="food-icon">早</span>早餐</div><ul><li>鸡蛋 2 个 + 无糖豆浆 / 牛奶</li><li>玉米、燕麦或全麦面包任选一种</li><li>避免甜面包、油条、奶茶</li></ul></div>
-        <div class="food-card"><div class="food-title"><span class="food-icon">午</span>午餐</div><ul><li>一掌心蛋白质：鸡肉、鱼虾、牛肉、豆腐</li><li>半碗到一碗米饭</li><li>两拳蔬菜，少油少酱</li></ul></div>
-        <div class="food-card"><div class="food-title"><span class="food-icon">晚</span>晚餐</div><ul><li>鱼虾、豆腐、鸡蛋为主</li><li>大量蔬菜 + 少量主食</li><li>不吃夜宵，不喝酒</li></ul></div>
-        <div class="food-card"><div class="food-title"><span class="food-icon">加</span>加餐</div><ul><li>无糖酸奶、牛奶、水果任选</li><li>坚果控制在一小把以内</li><li>饿了先补蛋白质，不吃零食</li></ul></div>
-      </div>
-    </section>
-
-    <section class="page" id="page-calendar">
-      <div class="header">
-        <div><div class="eyebrow">阶段反馈</div><h1>日历</h1></div>
-      </div>
-      <div class="calendar-card">
-        <div class="calendar-top">
-          <button class="mini-btn" onclick="changeMonth(-1)">上月</button>
-          <div class="month-title" id="monthTitle"></div>
-          <button class="mini-btn" onclick="changeMonth(1)">下月</button>
-        </div>
-        <div class="week"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
-        <div class="days" id="days"></div>
-        <div class="detail" id="dayDetail">点击某一天查看当天训练详情。</div>
-      </div>
-    </section>
+      </nav>
+    </div>
   </div>
 
-  <nav class="nav">
-    <div class="nav-inner">
-      <button class="nav-btn active" data-page="workout">今日锻炼</button>
-      <button class="nav-btn" data-page="food">吃什么</button>
-      <button class="nav-btn" data-page="calendar">日历</button>
-    </div>
-  </nav>
-
 <script>
+function syncViewportHeight(){
+  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--app-height', `${Math.round(viewportHeight)}px`);
+}
+syncViewportHeight();
+window.addEventListener('resize', syncViewportHeight, {passive:true});
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', syncViewportHeight, {passive:true});
+}
+
 const today = new Date();
 function formatLocalDate(d){
   const y = d.getFullYear();
@@ -243,39 +471,151 @@ const weekday = today.getDay();
 const weekNames = ['周日','周一','周二','周三','周四','周五','周六'];
 document.getElementById('dateTitle').textContent = `${today.getMonth()+1}月${today.getDate()}日 ${weekNames[weekday]}`;
 
-const exercisePhotoMap = {
-  "deadbug": [{src: "assets/img_01.png", alt: "deadbug-1"}],
-  "bridge": [{src: "assets/img_02.png", alt: "bridge-1"}],
-  "birddog": [{src: "assets/img_03.png", alt: "birddog-1"}],
-  "boxsquat": [{src: "assets/img_04.png", alt: "boxsquat-1"}],
-  "clam": [{src: "assets/img_05.png", alt: "clam-1"}],
-  "mcgill": [{src: "assets/img_06.png", alt: "mcgill-1"}],
-  "row": [{src: "assets/img_07.png", alt: "row-1"}],
-  "sideplank": [{src: "assets/img_08.png", alt: "sideplank-1"}],
-  "step": [{src: "assets/img_09.png", alt: "step-1"}],
-  "wall": [{src: "assets/img_10.png", alt: "wall-1"}],
-  "walk": [{src: "assets/img_11.png", alt: "walk-1"}, {src: "assets/img_12.png", alt: "walk-2"}, {src: "assets/img_13.png", alt: "walk-3"}, {src: "assets/img_14.png", alt: "walk-4"}],
-  "stretch": [{src: "assets/img_14.png", alt: "stretch-1"}],
+const rawPhotoMap = {
+  walk: [
+    {src:'assets/img_11.png', alt:'walk-1'},
+    {src:'assets/img_12.png', alt:'walk-2'},
+    {src:'assets/img_13.png', alt:'walk-3'}
+  ]
 };
 
+const collagePhotoMap = {
+  deadbug:{src:'assets/img_01.png', startY:0.15},
+  bridge:{src:'assets/img_02.png', startY:0.12},
+  birddog:{src:'assets/img_03.png', startY:0.12},
+  boxsquat:{src:'assets/img_04.png', startY:0.12},
+  clam:{src:'assets/img_05.png', startY:0.12},
+  mcgill:{src:'assets/img_06.png', startY:0.08},
+  row:{src:'assets/img_07.png', startY:0.12},
+  sideplank:{src:'assets/img_08.png', startY:0.08},
+  step:{src:'assets/img_09.png', startY:0.10},
+  wall:{src:'assets/img_10.png', startY:0.07}
+};
+
+const processedPhotoMap = {};
+const slideState = {};
+const KEY = 'pretty_back_checkin_history_v3';
+
+function history(){return JSON.parse(localStorage.getItem(KEY) || '[]')}
+function saveHistory(arr){localStorage.setItem(KEY, JSON.stringify(arr))}
+function getRecord(date){return history().find(r=>r.date===date)}
+function clamp(num, min, max){return Math.max(min, Math.min(max, num))}
+
+function createPlaceholderHtml(size){
+  return `<div class="photo-placeholder" style="font-size:${size === 'thumb' ? '12px' : '13px'};">暂无图片</div>`;
+}
+
+function createSvgDataUrl(svg){
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function buildStretchIllustrations(){
+  const variants = [
+    {
+      accent:'#8BC7FF',
+      body:'M176 314 Q244 246 329 314',
+      arms:'M200 278 Q247 252 291 278',
+      legs:'M182 322 Q232 364 286 322',
+      extra:'<circle cx="258" cy="264" r="22" fill="none" stroke="#8BC7FF" stroke-width="4" opacity=".82"/><circle cx="258" cy="264" r="44" fill="none" stroke="#8BC7FF" stroke-width="4" opacity=".42"/><circle cx="258" cy="264" r="66" fill="none" stroke="#8BC7FF" stroke-width="4" opacity=".24"/>'
+    },
+    {
+      accent:'#6FD0B3',
+      body:'M170 320 Q252 236 340 320',
+      arms:'M205 330 Q242 286 271 330 M271 330 Q306 286 334 330',
+      legs:'M195 346 Q222 382 248 346 M267 346 Q300 382 329 346',
+      extra:'<path d="M146 286 Q188 224 248 230 Q316 236 356 286" fill="none" stroke="#6FD0B3" stroke-width="8" stroke-linecap="round" opacity=".55"/>'
+    },
+    {
+      accent:'#F9C269',
+      body:'M188 314 Q234 256 308 276 Q346 286 372 334',
+      arms:'M208 300 Q243 272 279 286',
+      legs:'M200 332 Q236 370 272 338 M273 338 Q315 300 356 324',
+      extra:'<path d="M324 286 Q350 260 378 272 Q392 278 396 300" fill="none" stroke="#F9C269" stroke-width="8" stroke-linecap="round" opacity=".52"/>'
+    }
+  ];
+
+  return variants.map((variant, index)=>{
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540">
+        <defs>
+          <linearGradient id="bg${index}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F8FBFF"/>
+            <stop offset="100%" stop-color="#ECF5FF"/>
+          </linearGradient>
+        </defs>
+        <rect width="720" height="540" rx="42" fill="url(#bg${index})"/>
+        <rect x="0" y="402" width="720" height="138" fill="#E8EEF8"/>
+        <rect x="124" y="314" width="472" height="110" rx="34" fill="#D8E4F4"/>
+        <rect x="136" y="326" width="448" height="86" rx="28" fill="#F7FBFF"/>
+        <circle cx="230" cy="250" r="38" fill="#FFD6B5"/>
+        <path d="${variant.body}" fill="none" stroke="#475569" stroke-width="18" stroke-linecap="round"/>
+        <path d="${variant.arms}" fill="none" stroke="#475569" stroke-width="14" stroke-linecap="round"/>
+        <path d="${variant.legs}" fill="none" stroke="#475569" stroke-width="16" stroke-linecap="round"/>
+        <circle cx="230" cy="250" r="22" fill="#9CA3AF" opacity=".12"/>
+        ${variant.extra}
+        <circle cx="68" cy="68" r="26" fill="${variant.accent}"/>
+        <text x="68" y="76" text-anchor="middle" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${index + 1}</text>
+      </svg>
+    `;
+    return {src:createSvgDataUrl(svg), alt:`stretch-${index + 1}`};
+  });
+}
+
+function loadImage(src){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=>resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function cropCollagePanel(img, panelIndex, config){
+  const panelWidth = img.naturalWidth / 3;
+  const insetLeft = Math.round(panelWidth * (config.insetLeft ?? config.insetX ?? 0.10));
+  const insetRight = Math.round(panelWidth * (config.insetRight ?? config.insetX ?? 0.04));
+  const cropWidth = Math.round(panelWidth - insetLeft - insetRight);
+  const cropHeight = Math.round(cropWidth * 3 / 4);
+  const maxY = Math.max(0, img.naturalHeight - cropHeight - Math.round(img.naturalHeight * (config.bottomTrim ?? 0.02)));
+  const startY = clamp(Math.round(img.naturalHeight * (config.startY ?? 0.12)), 0, maxY);
+  const startX = Math.round(panelIndex * panelWidth + insetLeft);
+  const canvas = document.createElement('canvas');
+  canvas.width = 960;
+  canvas.height = 720;
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return img.src;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, startX, startY, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', 0.92);
+}
+
+async function prepareExercisePhotos(){
+  const entries = Object.entries(collagePhotoMap);
+  await Promise.all(entries.map(async ([type, config])=>{
+    const img = await loadImage(config.src);
+    processedPhotoMap[type] = [0,1,2].map(index=>({
+      src:cropCollagePanel(img, index, config),
+      alt:`${type}-${index + 1}`
+    }));
+  }));
+  processedPhotoMap.stretch = buildStretchIllustrations();
+}
+
 function getExercisePhotos(type){
-  return exercisePhotoMap[type] || [];
+  return processedPhotoMap[type] || rawPhotoMap[type] || [];
 }
+
 function renderThumbPhoto(type){
-  const photos = getExercisePhotos(type);
-  if(!photos.length){
-    return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:12px;font-weight:700;">暂无图片</div>`;
-  }
-  return `<img src="${photos[0].src}" alt="${photos[0].alt}">`;
+  const photo = getExercisePhotos(type)[0];
+  return photo ? `<img src="${photo.src}" alt="${photo.alt}">` : createPlaceholderHtml('thumb');
 }
+
 function renderSlidePhoto(type, index){
-  const photos = getExercisePhotos(type);
-  if(!photos.length){
-    return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:13px;font-weight:700;">暂无图片</div>`;
-  }
-  const photo = photos[index % photos.length];
-  return `<img src="${photo.src}" alt="${photo.alt}">`;
+  const photo = getExercisePhotos(type)[index];
+  return photo ? `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">` : createPlaceholderHtml('slide');
 }
+
 const plans = {
   A:{name:'康复力量训练 A + 快走',desc:'对应一周训练安排：康复力量训练 A + 快走。',items:[
     {id:'deadbug',title:'死虫式',sub:'核心稳定，保护腰椎',sets:'3组',reps:'每侧8–10次',point:'腰不要离地',steps:['仰卧，屈髋屈膝 90°，手臂指向上方。','收紧腹部，保持腰部稳定。','对侧手和腿缓慢伸直，再回到起始位。'],warn:'不要为了伸得更远而让腰离开地面。',slides:[['起始姿势','仰卧抬腿，双臂向上准备。'],['动作过程','对侧手腿缓慢伸直，保持腰部稳定。'],['回到起始','控制回收，准备做下一次。']]},
@@ -305,157 +645,115 @@ const plans = {
 };
 
 function planByWeekday(w){
-  if(w===1) return plans.A;
-  if(w===2) return plans.WALK;
-  if(w===3) return plans.B;
-  if(w===4) return plans.WALK;
-  if(w===5) return plans.A;
-  if(w===6) return plans.SAT;
+  if(w === 1) return plans.A;
+  if(w === 2) return plans.WALK;
+  if(w === 3) return plans.B;
+  if(w === 4) return plans.WALK;
+  if(w === 5) return plans.A;
+  if(w === 6) return plans.SAT;
   return plans.REST;
 }
+
 function planForDate(dateStr){
-  const d = new Date(dateStr+'T12:00:00');
+  const d = new Date(`${dateStr}T12:00:00`);
   return planByWeekday(d.getDay());
+}
+
+function renderExerciseCard(item, context){
+  const cardKey = `${context}-${item.id}`;
+  return `
+    <article class="exercise ${context === 'calendar' ? 'calendar-exercise' : ''}" id="card-${cardKey}">
+      <div class="exercise-top" onclick="toggleExerciseCard('${cardKey}')">
+        <div class="thumb">${renderThumbPhoto(item.id)}</div>
+        <div class="exercise-info">
+          <div class="exercise-title-row">
+            <h3 class="exercise-title">${item.title}</h3>
+            <span class="chevron" id="chev-${cardKey}">⌄</span>
+          </div>
+          <div class="exercise-sub">${item.sub}</div>
+          <div class="chips">
+            <span class="chip blue">${item.sets}</span>
+            <span class="chip">${item.reps}</span>
+            <span class="chip">${item.point}</span>
+          </div>
+        </div>
+      </div>
+      <div class="exercise-body">
+        <div class="carousel">
+          <div class="photo-frame" data-carousel-id="${cardKey}" data-total="${item.slides.length}">
+            <div class="slides" id="slides-${cardKey}">
+              ${item.slides.map((slide, index)=>`
+                <div class="slide">
+                  <div class="photo-card">
+                    <div class="photo-stage">${renderSlidePhoto(item.id, index)}</div>
+                    <div class="caption">
+                      <div class="caption-title">${slide[0]}</div>
+                      <div class="caption-sub">${slide[1]}</div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          ${item.slides.length > 1 ? `<button class="carousel-btn prev" onclick="event.stopPropagation(); moveSlide('${cardKey}', -1, ${item.slides.length})">‹</button><button class="carousel-btn next" onclick="event.stopPropagation(); moveSlide('${cardKey}', 1, ${item.slides.length})">›</button>` : ''}
+          <div class="dots" id="dots-${cardKey}">
+            ${item.slides.map((_, index)=>`<span class="dot ${index === 0 ? 'active' : ''}"></span>`).join('')}
+          </div>
+        </div>
+        <div class="steps"><b>怎么做：</b><br>${item.steps.map(step=>`• ${step}`).join('<br>')}</div>
+        <div class="warning">注意：${item.warn}</div>
+      </div>
+    </article>
+  `;
 }
 
 function renderCalendarExerciseCards(items){
   if(!items || !items.length){
     return `<div class="calendar-empty">当天暂无训练项目。</div>`;
   }
-  return `<div class="calendar-exercise-list">${items.map(item => {
-    const carouselId = `calendar-${item.id}`;
-    return `
-    <article class="exercise calendar-exercise">
-      <div class="exercise-top">
-        <div class="thumb">${renderThumbPhoto(item.id)}</div>
-        <div class="exercise-info">
-          <div class="exercise-title-row">
-            <h3 class="exercise-title">${item.title}</h3>
-            <span class="chevron">⌄</span>
-          </div>
-          <div class="exercise-sub">${item.sub}</div>
-          <div class="chips">
-            <span class="chip blue">${item.sets}</span>
-            <span class="chip">${item.reps}</span>
-            <span class="chip">${item.point}</span>
-          </div>
-        </div>
-      </div>
-      <div class="exercise-body">
-        <div class="carousel">
-          <div class="photo-frame" data-carousel-id="${carouselId}" data-total="${item.slides.length}">
-            <div class="slides" id="slides-${carouselId}">
-              ${item.slides.map((s, idx)=>`
-                <div class="slide">
-                  <div class="photo-card">
-                    <div class="photo-stage">${renderSlidePhoto(item.id, idx)}</div>
-                    <div class="caption">
-                      <div class="caption-title">${s[0]}</div>
-                      <div class="caption-sub">${s[1]}</div>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-          ${item.slides.length>1 ? `<button class="carousel-btn prev" onclick="event.stopPropagation(); moveSlide('${carouselId}', -1, ${item.slides.length})">‹</button><button class="carousel-btn next" onclick="event.stopPropagation(); moveSlide('${carouselId}', 1, ${item.slides.length})">›</button>` : ''}
-          <div class="dots" id="dots-${carouselId}">
-            ${item.slides.map((_, idx)=>`<span class="dot ${idx===0?'active':''}"></span>`).join('')}
-          </div>
-        </div>
-        <div class="steps"><b>怎么做：</b><br>${item.steps.map(s=>'• '+s).join('<br>')}</div>
-        <div class="warning">注意：${item.warn}</div>
-      </div>
-    </article>
-    `;
-  }).join('')}</div>`;
+  return `<div class="calendar-exercise-list">${items.map(item=>renderExerciseCard(item, 'calendar')).join('')}</div>`;
 }
 
 function renderWorkout(){
   const plan = planByWeekday(weekday);
   document.getElementById('planName').textContent = plan.name;
   document.getElementById('planDesc').textContent = plan.desc;
-  const list = document.getElementById('exerciseList');
-  list.innerHTML = plan.items.map(item=>{
-    const carouselId = `workout-${item.id}`;
-    return `
-    <article class="exercise" id="card-${item.id}">
-      <div class="exercise-top" onclick="toggleExercise('${item.id}')">
-        <div class="thumb">${renderThumbPhoto(item.id)}</div>
-        <div class="exercise-info">
-          <div class="exercise-title-row">
-            <h3 class="exercise-title">${item.title}</h3>
-            <span class="chevron" id="chev-${item.id}">⌄</span>
-          </div>
-          <div class="exercise-sub">${item.sub}</div>
-          <div class="chips">
-            <span class="chip blue">${item.sets}</span>
-            <span class="chip">${item.reps}</span>
-            <span class="chip">${item.point}</span>
-          </div>
-        </div>
-      </div>
-      <div class="exercise-body">
-        <div class="carousel">
-          <div class="photo-frame" data-carousel-id="${carouselId}" data-total="${item.slides.length}">
-            <div class="slides" id="slides-${carouselId}">
-              ${item.slides.map((s, idx)=>`
-                <div class="slide">
-                  <div class="photo-card">
-                    <div class="photo-stage">${renderSlidePhoto(item.id, idx)}</div>
-                    <div class="caption">
-                      <div class="caption-title">${s[0]}</div>
-                      <div class="caption-sub">${s[1]}</div>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-          ${item.slides.length>1 ? `<button class="carousel-btn prev" onclick="event.stopPropagation(); moveSlide('${carouselId}', -1, ${item.slides.length})">‹</button><button class="carousel-btn next" onclick="event.stopPropagation(); moveSlide('${carouselId}', 1, ${item.slides.length})">›</button>` : ''}
-          <div class="dots" id="dots-${carouselId}">
-            ${item.slides.map((_, idx)=>`<span class="dot ${idx===0?'active':''}"></span>`).join('')}
-          </div>
-        </div>
-        <div class="steps"><b>怎么做：</b><br>${item.steps.map(s=>'• '+s).join('<br>')}</div>
-        <div class="warning">注意：${item.warn}</div>
-      </div>
-    </article>
-    `;
-  }).join('');
+  document.getElementById('exerciseList').innerHTML = plan.items.map(item=>renderExerciseCard(item, 'workout')).join('');
   updateProgress();
   initSwipeCarousels();
 }
 
-const slideState = {};
 function moveSlide(id, delta, total){
-  if(!(id in slideState)) slideState[id]=0;
+  if(!(id in slideState)) slideState[id] = 0;
   slideState[id] = (slideState[id] + delta + total) % total;
-  updateCarousel(id, total);
+  updateCarousel(id);
 }
-function updateCarousel(id, total){
+
+function updateCarousel(id){
   const idx = slideState[id] || 0;
-  const track = document.getElementById('slides-'+id);
-  if(track) track.style.transform = `translateX(-${idx*100}%)`;
-  const dots = document.querySelectorAll(`#dots-${id} .dot`);
-  dots.forEach((d, i)=>d.classList.toggle('active', i===idx));
+  const track = document.getElementById(`slides-${id}`);
+  if(track) track.style.transform = `translateX(-${idx * 100}%)`;
+  document.querySelectorAll(`#dots-${id} .dot`).forEach((dot, index)=>{
+    dot.classList.toggle('active', index === idx);
+  });
 }
+
 function initSwipeCarousels(){
   document.querySelectorAll('.photo-frame[data-carousel-id]').forEach(frame=>{
     if(frame.dataset.swipeBound === '1') return;
     frame.dataset.swipeBound = '1';
     let startX = 0;
     let startY = 0;
-    frame.addEventListener('touchstart', (e)=>{
-      const t = e.touches[0];
-      startX = t.clientX;
-      startY = t.clientY;
+    frame.addEventListener('touchstart', event=>{
+      const touch = event.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
     }, {passive:true});
-    frame.addEventListener('touchend', (e)=>{
-      const t = e.changedTouches[0];
-      if(!t) return;
-      const dx = t.clientX - startX;
-      const dy = t.clientY - startY;
+    frame.addEventListener('touchend', event=>{
+      const touch = event.changedTouches[0];
+      if(!touch) return;
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
       if(Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy)) return;
       const id = frame.dataset.carouselId;
       const total = parseInt(frame.dataset.total || '1', 10);
@@ -465,102 +763,122 @@ function initSwipeCarousels(){
   });
 }
 
-function toggleExercise(id){
-  const card = document.getElementById('card-'+id);
+function toggleExerciseCard(cardKey){
+  const card = document.getElementById(`card-${cardKey}`);
+  if(!card) return;
   card.classList.toggle('open');
-  document.getElementById('chev-'+id).textContent = card.classList.contains('open') ? '⌃' : '⌄';
+  const chevron = document.getElementById(`chev-${cardKey}`);
+  if(chevron){
+    chevron.textContent = card.classList.contains('open') ? '⌃' : '⌄';
+  }
 }
 
 function updateProgress(){
   const total = planByWeekday(weekday).items.length;
   const isDone = getRecord(todayStr);
   const done = isDone ? total : 0;
-  const deg = total ? Math.round(done/total*360) : 0;
-  document.getElementById('ring').style.setProperty('--deg', deg+'deg');
+  const deg = total ? Math.round(done / total * 360) : 0;
+  document.getElementById('ring').style.setProperty('--deg', `${deg}deg`);
   document.getElementById('ringText').textContent = `${done}/${total}`;
   const btn = document.getElementById('checkinBtn');
   if(isDone){
-    btn.textContent='取消打卡';
+    btn.textContent = '取消打卡';
     btn.classList.add('done');
-    btn.title='如误点击，可点击取消今天的打卡';
+    btn.title = '如误点击，可点击取消今天的打卡';
   } else {
-    btn.textContent='立即打卡';
+    btn.textContent = '立即打卡';
     btn.classList.remove('done');
-    btn.title='记录今天的训练完成状态';
+    btn.title = '记录今天的训练完成状态';
   }
 }
 
-const KEY='pretty_back_checkin_history_v3';
-function history(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
-function saveHistory(arr){localStorage.setItem(KEY,JSON.stringify(arr))}
-function getRecord(date){return history().find(r=>r.date===date)}
-function saveToday(){
+function toggleTodayCheckin(){
   const existing = getRecord(todayStr);
   if(existing){
-    const arr = history().filter(r=>r.date!==todayStr).sort((a,b)=>b.date.localeCompare(a.date));
-    saveHistory(arr);
+    saveHistory(history().filter(record=>record.date !== todayStr).sort((a, b)=>b.date.localeCompare(a.date)));
   } else {
     const plan = planByWeekday(weekday);
-    const rec = {date:todayStr, plan:plan.name, status:3, note:'已完成今日计划'};
-    const arr = [rec, ...history().filter(r=>r.date!==todayStr)].sort((a,b)=>b.date.localeCompare(a.date));
-    saveHistory(arr);
+    const record = {date:todayStr, plan:plan.name, status:3, note:'已完成今日计划'};
+    saveHistory([record, ...history().filter(item=>item.date !== todayStr)].sort((a, b)=>b.date.localeCompare(a.date)));
   }
   selectedDate = todayStr;
+  viewMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   updateProgress();
   renderCalendar();
-  showDetail(selectedDate);
 }
-document.getElementById('checkinBtn').onclick = saveToday;
+document.getElementById('checkinBtn').onclick = toggleTodayCheckin;
 
 document.querySelectorAll('.nav-btn').forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.onclick = ()=>{
+    document.querySelectorAll('.nav-btn').forEach(node=>node.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('page-'+btn.dataset.page).classList.add('active');
-  }
+    document.getElementById(`page-${btn.dataset.page}`).classList.add('active');
+    const appScroll = document.getElementById('appScroll');
+    if(appScroll) appScroll.scrollTo({top:0, behavior:'smooth'});
+  };
 });
 
 let viewMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 let selectedDate = todayStr;
+
 function changeMonth(delta){
-  viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth()+delta, 1);
+  viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + delta, 1);
   renderCalendar();
 }
+
 function renderCalendar(){
-  const y=viewMonth.getFullYear(), m=viewMonth.getMonth();
-  document.getElementById('monthTitle').textContent=`${y}年${m+1}月`;
-  const daysEl=document.getElementById('days');
-  const map=new Map(history().map(r=>[r.date,r]));
-  const first=new Date(y,m,1);
-  let firstDay=first.getDay(); firstDay=firstDay===0?7:firstDay;
-  const days=new Date(y,m+1,0).getDate();
-  const prevDays=new Date(y,m,0).getDate();
-  daysEl.innerHTML='';
-  for(let i=1;i<=42;i++){
-    let num,dateObj,other=false;
-    if(i<firstDay){num=prevDays-(firstDay-1-i);dateObj=new Date(y,m-1,num);other=true}
-    else if(i<firstDay+days){num=i-firstDay+1;dateObj=new Date(y,m,num)}
-    else{num=i-(firstDay+days)+1;dateObj=new Date(y,m+1,num);other=true}
-    const key=formatLocalDate(dateObj);
-    const rec=map.get(key);
-    const el=document.createElement('div');
-    el.className='day '+(other?'other ':'')+(key===todayStr?'today ':'')+(key===selectedDate?'selected':'');
-    el.innerHTML=`<div class="day-num">${num}</div><div class="daydot ${rec?'s3':''}"></div>`;
-    el.onclick=()=>{selectedDate=key;renderCalendar();showDetail(key)};
+  const y = viewMonth.getFullYear();
+  const m = viewMonth.getMonth();
+  document.getElementById('monthTitle').textContent = `${y}年${m + 1}月`;
+  const daysEl = document.getElementById('days');
+  const map = new Map(history().map(record=>[record.date, record]));
+  const first = new Date(y, m, 1);
+  let firstDay = first.getDay();
+  firstDay = firstDay === 0 ? 7 : firstDay;
+  const days = new Date(y, m + 1, 0).getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+  daysEl.innerHTML = '';
+  for(let i = 1; i <= 42; i++){
+    let num;
+    let dateObj;
+    let other = false;
+    if(i < firstDay){
+      num = prevDays - (firstDay - 1 - i);
+      dateObj = new Date(y, m - 1, num);
+      other = true;
+    } else if(i < firstDay + days){
+      num = i - firstDay + 1;
+      dateObj = new Date(y, m, num);
+    } else {
+      num = i - (firstDay + days) + 1;
+      dateObj = new Date(y, m + 1, num);
+      other = true;
+    }
+    const key = formatLocalDate(dateObj);
+    const record = map.get(key);
+    const el = document.createElement('div');
+    el.className = `day ${other ? 'other ' : ''}${key === todayStr ? 'today ' : ''}${key === selectedDate ? 'selected' : ''}`;
+    el.innerHTML = `<div class="day-num">${num}</div><div class="daydot ${record ? 's3' : ''}"></div>`;
+    el.onclick = ()=>{
+      selectedDate = key;
+      renderCalendar();
+      showDetail(key);
+    };
     daysEl.appendChild(el);
   }
   showDetail(selectedDate);
 }
+
 function showDetail(date){
-  const rec = getRecord(date);
+  const record = getRecord(date);
   const plan = planForDate(date);
   document.getElementById('dayDetail').innerHTML = `
     <div class="calendar-plan-header">
       <div class="calendar-plan-date">${date}</div>
       <div class="calendar-plan-meta">
         计划：<strong>${plan.name}</strong><br>
-        状态：<strong>${rec ? rec.note : '未打卡'}</strong><br>
+        状态：<strong>${record ? record.note : '未打卡'}</strong><br>
         当天锻炼项目：
       </div>
     </div>
@@ -569,9 +887,20 @@ function showDetail(date){
   initSwipeCarousels();
 }
 
-renderWorkout();
-renderCalendar();
-initSwipeCarousels();
+async function bootstrap(){
+  try{
+    await prepareExercisePhotos();
+  } catch (error){
+    console.warn('图片裁切失败，将使用已可用资源继续渲染。', error);
+    processedPhotoMap.stretch = buildStretchIllustrations();
+  }
+  renderWorkout();
+  renderCalendar();
+  initSwipeCarousels();
+  updateProgress();
+}
+
+bootstrap();
 </script>
 </body>
 </html>
