@@ -505,7 +505,14 @@
               </div>
               <div class="summary-side">
                 <div class="ring" id="ring"><div class="ring-inner" id="ringText">0/6</div></div>
-                <button class="checkin" id="checkinBtn" type="button">立即打卡</button>
+                <button
+                  class="checkin"
+                  id="checkinBtn"
+                  type="button"
+                  onpointerdown="handleCheckinGesture(event)"
+                  onmousedown="handleCheckinGesture(event)"
+                  onclick="handleCheckinGesture(event)"
+                >立即打卡</button>
               </div>
             </div>
           </div>
@@ -552,9 +559,9 @@
       <nav class="nav">
         <div class="nav-inner">
           <span class="nav-pill" id="navPill" aria-hidden="true"></span>
-          <button class="nav-btn active" data-page="workout" type="button">今日锻炼</button>
-          <button class="nav-btn" data-page="food" type="button">吃什么</button>
-          <button class="nav-btn" data-page="calendar" type="button">日历</button>
+          <button class="nav-btn active" data-page="workout" type="button" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">今日锻炼</button>
+          <button class="nav-btn" data-page="food" type="button" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">吃什么</button>
+          <button class="nav-btn" data-page="calendar" type="button" onpointerdown="handleNavGesture(event)" onmousedown="handleNavGesture(event)" onclick="handleNavGesture(event)">日历</button>
         </div>
       </nav>
     </div>
@@ -1048,7 +1055,7 @@ function getNavButtonByPage(pageName){
   return navButtons.find(btn=>btn.dataset.page === pageName) || null;
 }
 
-function runGestureOnce(key, callback, windowMs = 260){
+function runGestureOnce(key, callback, windowMs = 700){
   const now = Date.now();
   if(now - (gestureTimes.get(key) || 0) < windowMs) return;
   gestureTimes.set(key, now);
@@ -1072,7 +1079,7 @@ function handleCheckinGesture(event){
     if(event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
   }
-  if(event?.type === 'pointerup' || event?.type === 'mouseup' || event?.type === 'touchend'){
+  if(event?.type === 'pointerdown' || event?.type === 'mousedown' || event?.type === 'pointerup' || event?.type === 'mouseup' || event?.type === 'touchend'){
     event.preventDefault();
   }
   runGestureOnce('checkin-toggle', ()=>{
@@ -1087,7 +1094,7 @@ function handleNavGesture(event){
     if(event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
   }
-  if(event?.type === 'pointerup' || event?.type === 'mouseup' || event?.type === 'touchend'){
+  if(event?.type === 'pointerdown' || event?.type === 'mousedown' || event?.type === 'pointerup' || event?.type === 'mouseup' || event?.type === 'touchend'){
     event.preventDefault();
   }
   runGestureOnce(`nav-${btn.dataset.page}`, ()=>{
@@ -1160,6 +1167,8 @@ pages.forEach(page=>{
 
 const checkinBtn = document.getElementById('checkinBtn');
 if(checkinBtn){
+  checkinBtn.addEventListener('pointerdown', handleCheckinGesture);
+  checkinBtn.addEventListener('mousedown', handleCheckinGesture);
   checkinBtn.addEventListener('pointerup', handleCheckinGesture);
   checkinBtn.addEventListener('mouseup', handleCheckinGesture);
   checkinBtn.addEventListener('touchend', handleCheckinGesture, {passive:false});
@@ -1168,12 +1177,16 @@ if(checkinBtn){
 }
 
 navButtons.forEach(btn=>{
+  btn.addEventListener('pointerdown', handleNavGesture);
+  btn.addEventListener('mousedown', handleNavGesture);
   btn.addEventListener('pointerup', handleNavGesture);
   btn.addEventListener('mouseup', handleNavGesture);
   btn.addEventListener('touchend', handleNavGesture, {passive:false});
   btn.addEventListener('click', handleNavGesture);
   btn.addEventListener('keydown', handleNavGesture);
 });
+document.addEventListener('pointerdown', handleDelegatedInteraction, true);
+document.addEventListener('mousedown', handleDelegatedInteraction, true);
 document.addEventListener('click', handleDelegatedInteraction, true);
 
 window.addEventListener('resize', ()=>requestAnimationFrame(()=>syncNavFromActivePage()), {passive:true});
@@ -1234,7 +1247,12 @@ function renderCalendarGrid(records){
     const el = document.createElement('div');
     el.className = `day ${other ? 'other ' : ''}${key === todayStr ? 'today ' : ''}${key === selectedDate ? 'selected' : ''}`;
     el.dataset.date = key;
+    el.setAttribute('onpointerdown', 'handleCalendarDate(this.dataset.date)');
+    el.setAttribute('onmousedown', 'handleCalendarDate(this.dataset.date)');
+    el.setAttribute('onclick', 'handleCalendarDate(this.dataset.date)');
     el.innerHTML = `<div class="day-num">${num}</div><div class="daydot ${record ? 's3' : ''}"></div>`;
+    el.addEventListener('pointerdown', ()=>handleCalendarDate(key));
+    el.addEventListener('mousedown', ()=>handleCalendarDate(key));
     el.addEventListener('click', ()=>handleCalendarDate(key));
     daysEl.appendChild(el);
   }
