@@ -113,6 +113,16 @@
       background:linear-gradient(135deg,#0F1B46,#2542A1);
       color:#fff;
       box-shadow:0 18px 40px rgba(15,23,42,.12);
+      transition:
+        background var(--motion-fast) var(--motion-spring),
+        box-shadow var(--motion-fast) ease,
+        transform var(--motion-fast) var(--motion-spring);
+    }
+    .summary.done{
+      background:
+        linear-gradient(135deg,rgba(6,95,70,.96),rgba(16,185,129,.94)),
+        radial-gradient(circle at 88% 16%, rgba(255,255,255,.28), transparent 34%);
+      box-shadow:0 20px 42px rgba(16,185,129,.22);
     }
     .summary:after{
       content:"";
@@ -124,12 +134,39 @@
       border-radius:999px;
       background:rgba(255,255,255,.10);
     }
+    .summary.done:after{
+      background:rgba(255,255,255,.18);
+    }
     .summary-main{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:stretch;gap:18px}
     .summary-left{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:2px 0 6px}
     .summary-side{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:14px;flex:0 0 auto}
     .summary-title{font-size:15px;color:rgba(255,255,255,.78);font-weight:700}
+    .summary.done .summary-title{color:rgba(236,253,245,.86)}
     .summary-value{margin-top:6px;font-size:34px;font-weight:900;letter-spacing:-1px}
     .summary-desc{margin-top:20px;font-size:14px;line-height:1.7;color:rgba(255,255,255,.82)}
+    .summary-status{
+      display:inline-flex;
+      align-items:center;
+      width:max-content;
+      margin-top:14px;
+      padding:7px 10px;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;
+      background:rgba(255,255,255,.10);
+      color:rgba(255,255,255,.86);
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.2px;
+      transition:
+        background var(--motion-fast) ease,
+        border-color var(--motion-fast) ease,
+        color var(--motion-fast) ease;
+    }
+    .summary.done .summary-status{
+      border-color:rgba(209,250,229,.72);
+      background:rgba(236,253,245,.22);
+      color:#ECFDF5;
+    }
     .ring{
       width:80px;
       height:80px;
@@ -138,6 +175,11 @@
       justify-content:center;
       border-radius:50%;
       background:conic-gradient(#8EC5FF var(--deg), rgba(255,255,255,.20) 0deg);
+      transition:background var(--motion-fast) ease, transform var(--motion-fast) var(--motion-spring);
+    }
+    .summary.done .ring{
+      background:conic-gradient(#D1FAE5 var(--deg), rgba(255,255,255,.24) 0deg);
+      transform:scale(1.04);
     }
     .ring-inner{
       width:60px;
@@ -149,6 +191,11 @@
       background:#163170;
       font-size:16px;
       font-weight:900;
+      transition:background var(--motion-fast) ease, color var(--motion-fast) ease;
+    }
+    .summary.done .ring-inner{
+      background:#064E3B;
+      color:#ECFDF5;
     }
     .section-head{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 12px}
     h2{margin:0;font-size:21px;letter-spacing:-.4px}
@@ -494,7 +541,7 @@
             </div>
           </div>
 
-          <div class="summary">
+          <div class="summary" id="todaySummary">
             <div class="summary-main">
               <div class="summary-left">
                 <div>
@@ -502,6 +549,7 @@
                   <div class="summary-value" id="planName">康复力量 A</div>
                 </div>
                 <div class="summary-desc" id="planDesc">按之前方案自动匹配今天的训练内容。</div>
+                <div class="summary-status" id="summaryStatus">未完成</div>
               </div>
               <div class="summary-side">
                 <div class="ring" id="ring"><div class="ring-inner" id="ringText">0/6</div></div>
@@ -996,11 +1044,15 @@ function updateProgress(){
   const isDone = getRecord(todayStr);
   const done = isDone ? total : 0;
   const deg = total ? Math.round(done / total * 360) : 0;
+  const summary = document.getElementById('todaySummary');
+  const status = document.getElementById('summaryStatus');
   document.getElementById('ring').style.setProperty('--deg', `${deg}deg`);
   document.getElementById('ringText').textContent = `${done}/${total}`;
   const btn = document.getElementById('checkinBtn');
   if(!btn) return;
   btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
+  if(summary) summary.classList.toggle('done', Boolean(isDone));
+  if(status) status.textContent = isDone ? '今日已完成' : '未完成';
   if(isDone){
     btn.textContent = '取消打卡';
     btn.classList.add('done');
