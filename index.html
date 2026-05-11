@@ -1054,7 +1054,7 @@ function updateProgress(){
   if(summary) summary.classList.toggle('done', Boolean(isDone));
   if(status) status.textContent = isDone ? '今日已完成' : '未完成';
   if(isDone){
-    btn.textContent = '取消打卡';
+    btn.textContent = '已完成';
     btn.classList.add('done');
     btn.title = '如误点击，可点击取消今天的打卡';
   } else {
