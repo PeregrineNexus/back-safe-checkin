@@ -158,7 +158,18 @@
       border-radius:24px;
       background:#F8FBFF;
     }
-    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .crop-photo{
+      position:relative;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+    }
+    .crop-photo img{
+      position:absolute;
+      max-width:none;
+      display:block;
+    }
+    .thumb > img{width:100%;height:100%;object-fit:cover;display:block}
     .exercise-info{flex:1;min-width:0}
     .exercise-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
     .exercise-title{margin:0;font-size:19px;font-weight:900;letter-spacing:-.3px}
@@ -194,7 +205,7 @@
       aspect-ratio:4 / 3;
       background:linear-gradient(180deg,#F8FBFF 0%,#EEF4FF 100%);
     }
-    .photo-stage img{width:100%;height:100%;object-fit:cover;display:block}
+    .photo-stage > img{width:100%;height:100%;object-fit:cover;display:block}
     .photo-placeholder{
       width:100%;
       height:100%;
@@ -493,6 +504,7 @@ const collagePhotoMap = {
 };
 
 const processedPhotoMap = {};
+const processedThumbMap = {};
 const slideState = {};
 const KEY = 'pretty_back_checkin_history_v3';
 
@@ -590,14 +602,74 @@ function cropCollagePanel(img, panelIndex, config){
   return canvas.toDataURL('image/jpeg', 0.92);
 }
 
-async function prepareExercisePhotos(){
-  const entries = Object.entries(collagePhotoMap);
-  await Promise.all(entries.map(async ([type, config])=>{
-    const img = await loadImage(config.src);
+function buildCssCrop(src, crop, alt){
+  return {src, alt, crop};
+}
+
+function buildCollageSlideFallback(img, panelIndex, config){
+  const panelWidth = img.naturalWidth / 3;
+  const insetLeft = Math.round(panelWidth * (config.insetLeft ?? config.insetX ?? 0.10));
+  const insetRight = Math.round(panelWidth * (config.insetRight ?? config.insetX ?? 0.04));
+  const cropWidth = Math.round(panelWidth - insetLeft - insetRight);
+  const cropHeight = Math.round(cropWidth * 3 / 4);
+  const maxY = Math.max(0, img.naturalHeight - cropHeight - Math.round(img.naturalHeight * (config.bottomTrim ?? 0.02)));
+  const startY = clamp(Math.round(img.naturalHeight * (config.startY ?? 0.12)), 0, maxY);
+  const startX = Math.round(panelIndex * panelWidth + insetLeft);
+  return buildCssCrop(img.src, {
+    imageWidth: img.naturalWidth,
+    imageHeight: img.naturalHeight,
+    cropX: startX,
+    cropY: startY,
+    cropWidth,
+    cropHeight
+  }, `panel-${panelIndex + 1}`);
+}
+
+function buildCollageThumbFallback(img, config){
+  const panelWidth = img.naturalWidth / 3;
+  const insetLeft = Math.round(panelWidth * (config.insetLeft ?? config.insetX ?? 0.10));
+  const insetRight = Math.round(panelWidth * (config.insetRight ?? config.insetX ?? 0.04));
+  const cropWidth = Math.round(panelWidth - insetLeft - insetRight);
+  const cropHeight = Math.round(cropWidth * 3 / 4);
+  const startY = clamp(
+    Math.round(img.naturalHeight * (config.startY ?? 0.12) - (cropWidth - cropHeight) / 2),
+    0,
+    Math.max(0, img.naturalHeight - cropWidth)
+  );
+  return buildCssCrop(img.src, {
+    imageWidth: img.naturalWidth,
+    imageHeight: img.naturalHeight,
+    cropX: insetLeft,
+    cropY: startY,
+    cropWidth,
+    cropHeight: cropWidth
+  }, 'thumb');
+}
+
+function buildCollagePhotos(type, img, config){
+  try{
     processedPhotoMap[type] = [0,1,2].map(index=>({
       src:cropCollagePanel(img, index, config),
       alt:`${type}-${index + 1}`
     }));
+    processedThumbMap[type] = processedPhotoMap[type][0];
+  } catch (error){
+    console.warn(`图片导出受限，改用 CSS 裁切回退：${type}`, error);
+    processedPhotoMap[type] = [0,1,2].map(index=>{
+      const photo = buildCollageSlideFallback(img, index, config);
+      photo.alt = `${type}-${index + 1}`;
+      return photo;
+    });
+    processedThumbMap[type] = buildCollageThumbFallback(img, config);
+    processedThumbMap[type].alt = `${type}-thumb`;
+  }
+}
+
+async function prepareExercisePhotos(){
+  const entries = Object.entries(collagePhotoMap);
+  await Promise.all(entries.map(async ([type, config])=>{
+    const img = await loadImage(config.src);
+    buildCollagePhotos(type, img, config);
   }));
   processedPhotoMap.stretch = buildStretchIllustrations();
 }
@@ -606,14 +678,38 @@ function getExercisePhotos(type){
   return processedPhotoMap[type] || rawPhotoMap[type] || [];
 }
 
+function getExerciseThumb(type){
+  return processedThumbMap[type] || getExercisePhotos(type)[0];
+}
+
+function renderCropPhoto(photo){
+  const crop = photo.crop;
+  const width = crop.imageWidth / crop.cropWidth * 100;
+  const height = crop.imageHeight / crop.cropHeight * 100;
+  const left = -crop.cropX / crop.cropWidth * 100;
+  const top = -crop.cropY / crop.cropHeight * 100;
+  return `
+    <div class="crop-photo" aria-label="${photo.alt}">
+      <img
+        src="${photo.src}"
+        alt="${photo.alt}"
+        loading="lazy"
+        style="width:${width}%;height:${height}%;left:${left}%;top:${top}%"
+      >
+    </div>
+  `;
+}
+
 function renderThumbPhoto(type){
-  const photo = getExercisePhotos(type)[0];
-  return photo ? `<img src="${photo.src}" alt="${photo.alt}">` : createPlaceholderHtml('thumb');
+  const photo = getExerciseThumb(type);
+  if(!photo) return createPlaceholderHtml('thumb');
+  return photo.crop ? renderCropPhoto(photo) : `<img src="${photo.src}" alt="${photo.alt}">`;
 }
 
 function renderSlidePhoto(type, index){
   const photo = getExercisePhotos(type)[index];
-  return photo ? `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">` : createPlaceholderHtml('slide');
+  if(!photo) return createPlaceholderHtml('slide');
+  return photo.crop ? renderCropPhoto(photo) : `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">`;
 }
 
 const plans = {
