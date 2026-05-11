@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#F6FAFF" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>减脂护腰训练打卡</title>
   <style>
     *{box-sizing:border-box}
@@ -19,8 +22,15 @@
       --motion-fast:240ms;
       --motion-soft:180ms;
       --motion-spring:cubic-bezier(.22,1,.36,1);
-      --app-version:"2026.05.11-nav-copy";
+      --page-bg:
+        radial-gradient(circle at 20% 0%, rgba(37,99,235,.12), transparent 32%),
+        linear-gradient(180deg,#F8FAFC 0%,#EEF3FA 100%);
+      --status-bg:
+        radial-gradient(circle at 18% 0%, rgba(37,99,235,.12), transparent 42%),
+        linear-gradient(180deg,#F6FAFF 0%,#EEF4FC 100%);
+      --app-version:"2026.05.11-status-bg";
     }
+    html{background:#F6FAFF;background-image:var(--page-bg)}
     html,body{
       height:100%;
       overflow:hidden;
@@ -31,12 +41,23 @@
       inset:0;
       margin:0;
       width:100%;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(37,99,235,.12), transparent 32%),
-        linear-gradient(180deg,#F8FAFC 0%,#EEF3FA 100%);
+      background:#F6FAFF;
+      background-image:var(--page-bg);
       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif;
       color:var(--text);
       -webkit-font-smoothing:antialiased;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      height:max(96px, calc(64px + env(safe-area-inset-top)));
+      background:#F6FAFF;
+      background-image:var(--status-bg);
+      pointer-events:none;
+      z-index:0;
     }
     .shell{
       position:fixed;
@@ -45,6 +66,7 @@
       display:flex;
       justify-content:center;
       overflow:hidden;
+      z-index:1;
     }
     .app-shell{
       position:relative;
