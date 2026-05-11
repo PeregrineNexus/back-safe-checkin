@@ -16,6 +16,9 @@
       --blue2:#EEF4FF;
       --green:#10B981;
       --shadow:0 16px 40px rgba(15,23,42,.08);
+      --motion-fast:240ms;
+      --motion-soft:180ms;
+      --motion-spring:cubic-bezier(.22,1,.36,1);
     }
     html,body{
       height:100%;
@@ -59,8 +62,14 @@
     .page.active{display:block}
     .header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:8px 0 18px}
     .eyebrow{font-size:13px;color:var(--sub);font-weight:700;margin-bottom:6px}
-    h1{margin:0;font-size:31px;letter-spacing:-.9px;line-height:1.1}
-    .date-title{font-size:26px;letter-spacing:-.6px;line-height:1.15}
+    h1{margin:0;font-size:31px;font-weight:900;letter-spacing:-.9px;line-height:1.1}
+    .date-title{
+      font-size:30px;
+      font-weight:900;
+      letter-spacing:-1px;
+      line-height:1.06;
+      font-variant-numeric:tabular-nums;
+    }
     .checkin{
       height:48px;
       padding:0 22px;
@@ -74,12 +83,25 @@
       letter-spacing:.4px;
       box-shadow:0 14px 30px rgba(59,130,246,.30);
       cursor:pointer;
-      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+      touch-action:manipulation;
+      will-change:transform, box-shadow;
+      transition:
+        transform var(--motion-soft) ease,
+        box-shadow var(--motion-soft) ease,
+        opacity var(--motion-soft) ease,
+        background var(--motion-fast) var(--motion-spring),
+        filter var(--motion-soft) ease;
     }
     .checkin:active{transform:scale(.98)}
+    .checkin.flash{animation:checkinFlash 420ms var(--motion-spring)}
     .checkin.done{
       background:linear-gradient(135deg,#10B981,#34D399);
       box-shadow:0 12px 26px rgba(16,185,129,.24);
+    }
+    @keyframes checkinFlash{
+      0%{transform:scale(1);filter:saturate(1)}
+      38%{transform:scale(1.04);filter:saturate(1.12)}
+      100%{transform:scale(1);filter:saturate(1)}
     }
     .summary{
       position:relative;
@@ -137,6 +159,14 @@
       border-radius:28px;
       background:rgba(255,255,255,.92);
       box-shadow:0 12px 30px rgba(15,23,42,.06);
+      transition:
+        border-color var(--motion-fast) ease,
+        box-shadow var(--motion-fast) ease,
+        transform var(--motion-fast) var(--motion-spring);
+    }
+    .exercise.open{
+      border-color:#D8E7FF;
+      box-shadow:0 18px 38px rgba(37,99,235,.10);
     }
     .exercise-top{
       display:flex;
@@ -145,6 +175,10 @@
       padding:16px;
       cursor:pointer;
       -webkit-tap-highlight-color:transparent;
+      transition:background var(--motion-soft) ease;
+    }
+    .exercise-top:active{
+      background:rgba(37,99,235,.03);
     }
     .thumb{
       width:82px;
@@ -173,13 +207,54 @@
     .exercise-info{flex:1;min-width:0}
     .exercise-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
     .exercise-title{margin:0;font-size:19px;font-weight:900;letter-spacing:-.3px}
-    .chevron{color:#94A3B8;font-size:22px;font-weight:700}
+    .chevron{
+      width:28px;
+      height:28px;
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#94A3B8;
+      transition:
+        transform var(--motion-fast) var(--motion-spring),
+        color var(--motion-soft) ease;
+    }
+    .chevron svg{width:18px;height:18px;display:block}
+    .exercise.open .chevron{
+      color:#2563EB;
+      transform:rotate(180deg);
+    }
     .exercise-sub{margin-top:5px;color:var(--sub);font-size:13px;line-height:1.45;font-weight:600}
     .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
     .chip{padding:6px 9px;border-radius:999px;background:#F3F6FA;color:#475569;font-size:12px;font-weight:800}
     .chip.blue{background:var(--blue2);color:#1D4ED8}
-    .exercise-body{display:none;padding:0 16px 16px}
-    .exercise.open .exercise-body{display:block}
+    .exercise-body{
+      display:grid;
+      grid-template-rows:0fr;
+      padding:0 16px;
+      pointer-events:none;
+      transition:
+        grid-template-rows var(--motion-fast) var(--motion-spring),
+        padding var(--motion-fast) var(--motion-spring);
+    }
+    .exercise-body-inner{
+      min-height:0;
+      overflow:hidden;
+      opacity:0;
+      transform:translateY(-10px);
+      transition:
+        opacity var(--motion-soft) ease,
+        transform var(--motion-fast) var(--motion-spring);
+    }
+    .exercise.open .exercise-body{
+      grid-template-rows:1fr;
+      padding:0 16px 16px;
+      pointer-events:auto;
+    }
+    .exercise.open .exercise-body-inner{
+      opacity:1;
+      transform:none;
+    }
     .carousel{position:relative;margin-bottom:12px}
     .photo-frame{
       position:relative;
@@ -351,6 +426,8 @@
       pointer-events:none;
     }
     .nav-inner{
+      position:relative;
+      isolation:isolate;
       display:grid;
       grid-template-columns:repeat(3,1fr);
       gap:8px;
@@ -363,7 +440,24 @@
       box-shadow:0 10px 24px rgba(15,23,42,.08);
       pointer-events:auto;
     }
+    .nav-pill{
+      position:absolute;
+      top:6px;
+      left:0;
+      z-index:0;
+      width:calc((100% - 28px) / 3);
+      height:46px;
+      border-radius:17px;
+      background:#FFF;
+      box-shadow:0 10px 22px rgba(15,23,42,.10);
+      transition:
+        transform var(--motion-fast) var(--motion-spring),
+        width var(--motion-fast) var(--motion-spring),
+        box-shadow var(--motion-soft) ease;
+    }
     .nav-btn{
+      position:relative;
+      z-index:1;
       height:46px;
       border:none;
       border-radius:17px;
@@ -372,8 +466,13 @@
       font-size:14px;
       font-weight:900;
       cursor:pointer;
+      touch-action:manipulation;
+      transition:
+        color var(--motion-soft) ease,
+        transform var(--motion-soft) ease;
     }
-    .nav-btn.active{background:#FFF;color:#111827;box-shadow:0 8px 20px rgba(15,23,42,.08)}
+    .nav-btn:active{transform:scale(.98)}
+    .nav-btn.active{color:#111827}
     @media (max-width:380px){
       .summary-main{flex-direction:column}
       .summary-side{flex-direction:row;justify-content:space-between;align-items:center}
@@ -405,7 +504,7 @@
               </div>
               <div class="summary-side">
                 <div class="ring" id="ring"><div class="ring-inner" id="ringText">0/5</div></div>
-                <button class="checkin" id="checkinBtn">立即打卡</button>
+                <button class="checkin" id="checkinBtn" type="button">立即打卡</button>
               </div>
             </div>
           </div>
@@ -438,9 +537,9 @@
           </div>
           <div class="calendar-card">
             <div class="calendar-top">
-              <button class="mini-btn" onclick="changeMonth(-1)">上月</button>
+              <button class="mini-btn" type="button" onclick="changeMonth(-1)">上月</button>
               <div class="month-title" id="monthTitle"></div>
-              <button class="mini-btn" onclick="changeMonth(1)">下月</button>
+              <button class="mini-btn" type="button" onclick="changeMonth(1)">下月</button>
             </div>
             <div class="week"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
             <div class="days" id="days"></div>
@@ -451,9 +550,10 @@
 
       <nav class="nav">
         <div class="nav-inner">
-          <button class="nav-btn active" data-page="workout">今日锻炼</button>
-          <button class="nav-btn" data-page="food">吃什么</button>
-          <button class="nav-btn" data-page="calendar">日历</button>
+          <span class="nav-pill" id="navPill" aria-hidden="true"></span>
+          <button class="nav-btn active" data-page="workout" type="button">今日锻炼</button>
+          <button class="nav-btn" data-page="food" type="button">吃什么</button>
+          <button class="nav-btn" data-page="calendar" type="button">日历</button>
         </div>
       </nav>
     </div>
@@ -764,7 +864,11 @@ function renderExerciseCard(item, context){
         <div class="exercise-info">
           <div class="exercise-title-row">
             <h3 class="exercise-title">${item.title}</h3>
-            <span class="chevron" id="chev-${cardKey}">⌄</span>
+            <span class="chevron" id="chev-${cardKey}" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M5.25 7.75L10 12.25L14.75 7.75" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </span>
           </div>
           <div class="exercise-sub">${item.sub}</div>
           <div class="chips">
@@ -775,29 +879,31 @@ function renderExerciseCard(item, context){
         </div>
       </div>
       <div class="exercise-body">
-        <div class="carousel">
-          <div class="photo-frame" data-carousel-id="${cardKey}" data-total="${item.slides.length}">
-            <div class="slides" id="slides-${cardKey}">
-              ${item.slides.map((slide, index)=>`
-                <div class="slide">
-                  <div class="photo-card">
-                    <div class="photo-stage">${renderSlidePhoto(item.id, index)}</div>
-                    <div class="caption">
-                      <div class="caption-title">${slide[0]}</div>
-                      <div class="caption-sub">${slide[1]}</div>
+        <div class="exercise-body-inner">
+          <div class="carousel">
+            <div class="photo-frame" data-carousel-id="${cardKey}" data-total="${item.slides.length}">
+              <div class="slides" id="slides-${cardKey}">
+                ${item.slides.map((slide, index)=>`
+                  <div class="slide">
+                    <div class="photo-card">
+                      <div class="photo-stage">${renderSlidePhoto(item.id, index)}</div>
+                      <div class="caption">
+                        <div class="caption-title">${slide[0]}</div>
+                        <div class="caption-sub">${slide[1]}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              `).join('')}
+                `).join('')}
+              </div>
+            </div>
+            ${item.slides.length > 1 ? `<button class="carousel-btn prev" type="button" onclick="event.stopPropagation(); moveSlide('${cardKey}', -1, ${item.slides.length})">‹</button><button class="carousel-btn next" type="button" onclick="event.stopPropagation(); moveSlide('${cardKey}', 1, ${item.slides.length})">›</button>` : ''}
+            <div class="dots" id="dots-${cardKey}">
+              ${item.slides.map((_, index)=>`<span class="dot ${index === 0 ? 'active' : ''}"></span>`).join('')}
             </div>
           </div>
-          ${item.slides.length > 1 ? `<button class="carousel-btn prev" onclick="event.stopPropagation(); moveSlide('${cardKey}', -1, ${item.slides.length})">‹</button><button class="carousel-btn next" onclick="event.stopPropagation(); moveSlide('${cardKey}', 1, ${item.slides.length})">›</button>` : ''}
-          <div class="dots" id="dots-${cardKey}">
-            ${item.slides.map((_, index)=>`<span class="dot ${index === 0 ? 'active' : ''}"></span>`).join('')}
-          </div>
+          <div class="steps"><b>怎么做：</b><br>${item.steps.map(step=>`• ${step}`).join('<br>')}</div>
+          <div class="warning">注意：${item.warn}</div>
         </div>
-        <div class="steps"><b>怎么做：</b><br>${item.steps.map(step=>`• ${step}`).join('<br>')}</div>
-        <div class="warning">注意：${item.warn}</div>
       </div>
     </article>
   `;
@@ -863,10 +969,6 @@ function toggleExerciseCard(cardKey){
   const card = document.getElementById(`card-${cardKey}`);
   if(!card) return;
   card.classList.toggle('open');
-  const chevron = document.getElementById(`chev-${cardKey}`);
-  if(chevron){
-    chevron.textContent = card.classList.contains('open') ? '⌃' : '⌄';
-  }
 }
 
 function updateProgress(){
@@ -877,6 +979,8 @@ function updateProgress(){
   document.getElementById('ring').style.setProperty('--deg', `${deg}deg`);
   document.getElementById('ringText').textContent = `${done}/${total}`;
   const btn = document.getElementById('checkinBtn');
+  if(!btn) return;
+  btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
   if(isDone){
     btn.textContent = '取消打卡';
     btn.classList.add('done');
@@ -886,6 +990,15 @@ function updateProgress(){
     btn.classList.remove('done');
     btn.title = '记录今天的训练完成状态';
   }
+}
+
+function flashCheckinButton(){
+  const btn = document.getElementById('checkinBtn');
+  if(!btn) return;
+  btn.classList.remove('flash');
+  void btn.offsetWidth;
+  btn.classList.add('flash');
+  window.setTimeout(()=>btn.classList.remove('flash'), 440);
 }
 
 function toggleTodayCheckin(){
@@ -901,19 +1014,51 @@ function toggleTodayCheckin(){
   viewMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   updateProgress();
   renderCalendar();
+  flashCheckinButton();
 }
-document.getElementById('checkinBtn').onclick = toggleTodayCheckin;
 
-document.querySelectorAll('.nav-btn').forEach(btn=>{
-  btn.onclick = ()=>{
-    document.querySelectorAll('.nav-btn').forEach(node=>node.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(`page-${btn.dataset.page}`).classList.add('active');
-    const appScroll = document.getElementById('appScroll');
-    if(appScroll) appScroll.scrollTo({top:0, behavior:'smooth'});
-  };
+const appScroll = document.getElementById('appScroll');
+const navPill = document.getElementById('navPill');
+const navButtons = Array.from(document.querySelectorAll('.nav-btn'));
+const pages = Array.from(document.querySelectorAll('.page'));
+
+function updateNavPill(targetBtn = document.querySelector('.nav-btn.active')){
+  if(!navPill || !targetBtn) return;
+  const hostRect = navPill.parentElement.getBoundingClientRect();
+  const targetRect = targetBtn.getBoundingClientRect();
+  if(!targetRect.width) return;
+  navPill.style.width = `${targetRect.width}px`;
+  navPill.style.height = `${targetRect.height}px`;
+  navPill.style.transform = `translateX(${Math.round(targetRect.left - hostRect.left)}px)`;
+}
+
+function setActivePage(pageName){
+  const activeBtn = navButtons.find(btn=>btn.dataset.page === pageName);
+  if(!activeBtn) return;
+  navButtons.forEach(btn=>{
+    const isActive = btn === activeBtn;
+    btn.classList.toggle('active', isActive);
+    if(isActive) btn.setAttribute('aria-current', 'page');
+    else btn.removeAttribute('aria-current');
+  });
+  pages.forEach(page=>page.classList.toggle('active', page.id === `page-${pageName}`));
+  updateNavPill(activeBtn);
+  if(appScroll) appScroll.scrollTo({top:0, behavior:'smooth'});
+}
+
+const checkinBtn = document.getElementById('checkinBtn');
+if(checkinBtn){
+  checkinBtn.addEventListener('click', toggleTodayCheckin);
+}
+
+navButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=>setActivePage(btn.dataset.page));
 });
+
+window.addEventListener('resize', ()=>requestAnimationFrame(()=>updateNavPill()), {passive:true});
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', ()=>requestAnimationFrame(()=>updateNavPill()), {passive:true});
+}
 
 let viewMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 let selectedDate = todayStr;
@@ -994,6 +1139,10 @@ async function bootstrap(){
   renderCalendar();
   initSwipeCarousels();
   updateProgress();
+  requestAnimationFrame(()=>{
+    setActivePage('workout');
+    updateNavPill();
+  });
 }
 
 bootstrap();
