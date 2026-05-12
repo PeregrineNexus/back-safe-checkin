@@ -242,7 +242,9 @@
       padding:18px;
       border:1px solid rgba(226,232,240,.82);
       border-radius:30px;
-      background:rgba(255,255,255,.88);
+      background:
+        radial-gradient(circle at 92% 2%, rgba(16,185,129,.12), transparent 34%),
+        linear-gradient(145deg,rgba(255,255,255,.96) 0%,rgba(248,251,255,.92) 100%);
       box-shadow:0 16px 34px rgba(15,23,42,.07);
       backdrop-filter:blur(18px);
       -webkit-backdrop-filter:blur(18px);
@@ -265,6 +267,30 @@
       align-items:flex-start;
       justify-content:space-between;
       gap:14px;
+    }
+    .card-heading{
+      display:flex;
+      align-items:flex-start;
+      gap:11px;
+      flex:1;
+      min-width:0;
+    }
+    .card-feature-icon{
+      width:40px;
+      height:40px;
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:16px;
+      color:#047857;
+      background:linear-gradient(145deg,#D1FAE5 0%,#ECFDF5 100%);
+      box-shadow:0 12px 22px rgba(16,185,129,.14);
+    }
+    .card-feature-icon svg,.stat-icon svg,.week-day-icon svg,.achievement-stat-icon svg,.badge-icon svg,.achievement-mark svg{
+      width:1em;
+      height:1em;
+      display:block;
     }
     .card-kicker{
       color:#64748B;
@@ -297,7 +323,7 @@
       justify-content:center;
       border-radius:50%;
       background:conic-gradient(#10B981 var(--deg), #E8EEF7 0deg);
-      box-shadow:inset 0 0 0 1px rgba(16,185,129,.10);
+      box-shadow:0 14px 26px rgba(15,23,42,.08), inset 0 0 0 1px rgba(16,185,129,.10);
     }
     .week-ring-inner{
       width:58px;
@@ -327,17 +353,35 @@
       margin-top:14px;
     }
     .stat-pill{
-      padding:10px 9px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      min-height:72px;
+      padding:11px 9px;
       border-radius:18px;
-      background:#F8FAFC;
+      background:rgba(248,250,252,.86);
+      border:1px solid rgba(226,232,240,.72);
       color:#475569;
       font-size:12px;
       font-weight:850;
       text-align:center;
     }
+    .stat-icon{
+      width:26px;
+      height:26px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      color:#047857;
+      background:#ECFDF5;
+    }
+    .stat-pill.walk .stat-icon{color:#2563EB;background:#EFF6FF}
+    .stat-pill.recovery .stat-icon{color:#F97316;background:#FFF7ED}
     .stat-pill strong{
       display:block;
-      margin-bottom:2px;
       color:#0F172A;
       font-size:17px;
       font-weight:950;
@@ -350,8 +394,8 @@
       grid-template-columns:repeat(6,1fr);
       align-items:end;
       gap:8px;
-      margin-top:16px;
-      padding:12px 10px 10px;
+      margin-top:12px;
+      padding:10px 9px 9px;
       border-radius:22px;
       background:linear-gradient(180deg,#F8FBFF 0%,#F1F5F9 100%);
     }
@@ -359,16 +403,29 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap:7px;
+      gap:5px;
       min-width:0;
       color:#94A3B8;
       font-size:11px;
       font-weight:900;
     }
+    .week-day-icon{
+      width:22px;
+      height:22px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      color:#94A3B8;
+      background:#E2E8F0;
+      box-shadow:inset 0 0 0 1px rgba(148,163,184,.14);
+      font-size:12px;
+      transition:transform var(--motion-soft) var(--motion-spring), background var(--motion-soft) ease, color var(--motion-soft) ease;
+    }
     .week-bar{
       width:100%;
-      max-width:28px;
-      height:42px;
+      max-width:24px;
+      height:36px;
       border-radius:999px;
       background:#E2E8F0;
       box-shadow:inset 0 0 0 1px rgba(148,163,184,.14);
@@ -378,6 +435,17 @@
     .week-day.done .week-bar{
       background:linear-gradient(180deg,#34D399 0%,#10B981 100%);
       box-shadow:0 8px 16px rgba(16,185,129,.22);
+    }
+    .week-day.done .week-day-icon{
+      color:#fff;
+      background:linear-gradient(135deg,#34D399 0%,#10B981 100%);
+      transform:translateY(-1px);
+      box-shadow:0 8px 16px rgba(16,185,129,.22);
+    }
+    .week-day.today .week-day-icon{
+      color:#2563EB;
+      background:#EFF6FF;
+      box-shadow:inset 0 0 0 2px rgba(37,99,235,.22);
     }
     .week-day.today .week-bar{
       outline:2px solid rgba(37,99,235,.22);
@@ -395,6 +463,12 @@
     .achievement-card .card-kicker{color:rgba(236,253,245,.78)}
     .achievement-card .card-title{color:#fff}
     .achievement-card .card-sub{color:rgba(236,253,245,.84)}
+    .achievement-card .card-feature-icon{
+      color:#ECFDF5;
+      background:rgba(236,253,245,.17);
+      border:1px solid rgba(236,253,245,.22);
+      box-shadow:none;
+    }
     .achievement-mark{
       width:66px;
       height:66px;
@@ -406,7 +480,7 @@
       background:rgba(236,253,245,.18);
       border:1px solid rgba(236,253,245,.32);
       color:#ECFDF5;
-      font-size:30px;
+      font-size:32px;
       font-weight:950;
     }
     .achievement-stats{
@@ -418,6 +492,10 @@
       margin-top:16px;
     }
     .achievement-stat{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      column-gap:10px;
+      align-items:center;
       padding:12px;
       border-radius:20px;
       background:rgba(255,255,255,.13);
@@ -426,9 +504,20 @@
       font-size:12px;
       font-weight:850;
     }
+    .achievement-stat-icon{
+      width:32px;
+      height:32px;
+      grid-row:span 2;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:13px;
+      background:rgba(236,253,245,.16);
+      color:#ECFDF5;
+      font-size:17px;
+    }
     .achievement-stat strong{
       display:block;
-      margin-bottom:3px;
       color:#fff;
       font-size:24px;
       font-weight:950;
@@ -443,6 +532,11 @@
       margin-top:10px;
     }
     .badge-card{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      min-height:64px;
       padding:10px 8px;
       border-radius:18px;
       background:rgba(255,255,255,.11);
@@ -457,11 +551,20 @@
       color:#047857;
       box-shadow:0 10px 18px rgba(4,120,87,.18);
     }
-    .badge-card span{
-      display:block;
+    .badge-icon{
+      width:28px;
+      height:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       margin-bottom:4px;
-      font-size:18px;
-      line-height:1;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      color:currentColor;
+      font-size:15px;
+    }
+    .badge-card.active .badge-icon{
+      background:#D1FAE5;
     }
     .section-head{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 12px}
     h2{margin:0;font-size:21px;letter-spacing:-.4px}
@@ -1199,7 +1302,7 @@ const exerciseAltNames = {
 const exercisePhotoMap = Object.fromEntries(exerciseImageTypes.map(type=>[
   type,
   [1,2,3].map(step=>({
-    src:`assets/exercises/${type}-${step}.svg`,
+    src:`assets/exercises/${type}-${step}.jpg`,
     alt:`${exerciseAltNames[type]}第${step}步示意图`
   }))
 ]));
@@ -1533,6 +1636,28 @@ function renderCalendarExerciseCards(items){
   return `<div class="calendar-exercise-list">${items.map(item=>renderExerciseCard(item, 'calendar')).join('')}</div>`;
 }
 
+function iconSvg(name){
+  const icons = {
+    overview:'<path d="M4 11.5h4l2.5-6 3.5 11 2-5h4" /><path d="M5 20h14" />',
+    shield:'<path d="M12 3.5l7 2.6v5.2c0 4.1-2.8 7.8-7 9.2-4.2-1.4-7-5.1-7-9.2V6.1l7-2.6z" /><path d="M8.8 11.9l2.2 2.2 4.4-5" />',
+    strength:'<path d="M5 9v6" /><path d="M19 9v6" /><path d="M8 8v8" /><path d="M16 8v8" /><path d="M8 12h8" />',
+    walk:'<path d="M13 4.5a1.8 1.8 0 1 0 0 .1z" /><path d="M11 8l-2 4 3 2 1.5 5" /><path d="M12 14l4-1.5" /><path d="M9 12l-3 7" />',
+    recovery:'<path d="M12 21s7-4.4 7-10.1A4.1 4.1 0 0 0 12 8a4.1 4.1 0 0 0-7 2.9C5 16.6 12 21 12 21z" /><path d="M12 8V4" /><path d="M9.5 5.5h5" />',
+    calendar:'<path d="M7 3v3" /><path d="M17 3v3" /><path d="M4.5 9h15" /><rect x="4.5" y="5" width="15" height="15" rx="3" /><path d="M8 13l2.2 2.2L15.5 10" />',
+    flame:'<path d="M12 21c3.3-1.3 5-3.5 5-6.4 0-2.5-1.3-4.2-3.3-5.9.1 1.8-.6 3-1.7 3.9.2-3.1-1.2-5.8-4-8.1.5 3.2-.6 5-1.8 6.6A6.3 6.3 0 0 0 5 14.7c0 2.8 2.1 5 7 6.3z" />',
+    trophy:'<path d="M8 4h8v3.5a4 4 0 0 1-8 0V4z" /><path d="M8 6H5.5a2.5 2.5 0 0 0 2.8 4.1" /><path d="M16 6h2.5a2.5 2.5 0 0 1-2.8 4.1" /><path d="M12 12v4" /><path d="M9 20h6" /><path d="M10 16h4" />',
+    spark:'<path d="M12 3l1.6 5 5.4 1.6-5.4 1.6L12 17l-1.6-5-5.4-1.6L10.4 8 12 3z" /><path d="M18 15l.7 2.1L21 18l-2.3.9L18 21l-.7-2.1L15 18l2.3-.9L18 15z" />',
+    check:'<path d="M5 12.5l4.2 4.2L19 6.8" />'
+  };
+  return `
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        ${icons[name] || icons.check}
+      </g>
+    </svg>
+  `;
+}
+
 function getPlanKind(date){
   const name = planForDate(date).name;
   if(name.includes('康复力量')) return 'strength';
@@ -1558,9 +1683,12 @@ function renderWeeklyOverview(){
   const bars = weekDates.map((date, index)=>{
     const done = doneSet.has(date);
     const isToday = date === todayStr;
-    const height = done ? 34 + index * 4 : 22;
+    const kind = getPlanKind(date);
+    const height = done ? 28 + index * 3 : 18;
+    const dayIcon = kind === 'strength' ? 'strength' : kind === 'walk' ? 'walk' : 'recovery';
     return `
       <div class="week-day ${done ? 'done' : ''} ${isToday ? 'today' : ''}" aria-label="${date}${done ? '已完成' : '未完成'}">
+        <div class="week-day-icon">${iconSvg(done ? 'check' : dayIcon)}</div>
         <div class="week-bar" style="height:${height}px"></div>
         <span>${labels[index]}</span>
       </div>
@@ -1568,19 +1696,22 @@ function renderWeeklyOverview(){
   }).join('');
   el.innerHTML = `
     <div class="weekly-top">
-      <div>
-        <div class="card-kicker">本周概览</div>
-        <div class="card-title">连续 ${currentStreak} 天</div>
-        <div class="card-sub">本周完成 ${completed}/${target}，保持低冲击节奏，腰舒服比冲强度更重要。</div>
+      <div class="card-heading">
+        <div class="card-feature-icon">${iconSvg('overview')}</div>
+        <div>
+          <div class="card-kicker">本周概览</div>
+          <div class="card-title">连续 ${currentStreak} 天</div>
+          <div class="card-sub">本周完成 ${completed}/${target}，保持低冲击节奏，腰舒服比冲强度更重要。</div>
+        </div>
       </div>
       <div class="week-ring" style="--deg:${deg}deg" aria-label="本周完成 ${completed}/${target}">
         <div class="week-ring-inner">${completed}/${target}<span>完成</span></div>
       </div>
     </div>
     <div class="stat-grid">
-      <div class="stat-pill"><strong>${strengthDone}</strong>护腰训练</div>
-      <div class="stat-pill"><strong>${walkDone}</strong>快走</div>
-      <div class="stat-pill"><strong>${recoveryDone}</strong>恢复日</div>
+      <div class="stat-pill strength"><span class="stat-icon">${iconSvg('strength')}</span><strong>${strengthDone}</strong>护腰训练</div>
+      <div class="stat-pill walk"><span class="stat-icon">${iconSvg('walk')}</span><strong>${walkDone}</strong>快走</div>
+      <div class="stat-pill recovery"><span class="stat-icon">${iconSvg('recovery')}</span><strong>${recoveryDone}</strong>恢复日</div>
     </div>
     <div class="week-bars">${bars}</div>
   `;
@@ -1597,26 +1728,29 @@ function renderAchievements(){
   const doneSet = new Set(uniqueRecordDates(records));
   const weekDone = weekDates.filter(date=>doneSet.has(date)).length;
   const badges = [
-    {icon:'稳', title:'稳定护腰', active:monthDone >= 3},
-    {icon:'走', title:'快走达人', active:records.some(record=>record.plan?.includes('走'))},
-    {icon:'满', title:'本周满勤', active:weekDone >= weekDates.length}
+    {icon:'shield', title:'稳定护腰', active:monthDone >= 3},
+    {icon:'walk', title:'快走达人', active:records.some(record=>record.plan?.includes('走'))},
+    {icon:'spark', title:'本周满勤', active:weekDone >= weekDates.length}
   ].map(badge=>`
     <div class="badge-card ${badge.active ? 'active' : ''}">
-      <span>${badge.icon}</span>${badge.title}
+      <span class="badge-icon">${iconSvg(badge.icon)}</span>${badge.title}
     </div>
   `).join('');
   el.innerHTML = `
     <div class="achievement-top">
-      <div>
-        <div class="card-kicker">打卡成就</div>
-        <div class="card-title">本月完成 ${monthDone} 天</div>
-        <div class="card-sub">最长连续 ${longest} 天，当前连续 ${currentStreak} 天。每一次稳定完成，都在帮腰背建立安全感。</div>
+      <div class="card-heading">
+        <div class="card-feature-icon">${iconSvg('trophy')}</div>
+        <div>
+          <div class="card-kicker">打卡成就</div>
+          <div class="card-title">本月完成 ${monthDone} 天</div>
+          <div class="card-sub">最长连续 ${longest} 天，当前连续 ${currentStreak} 天。每一次稳定完成，都在帮腰背建立安全感。</div>
+        </div>
       </div>
-      <div class="achievement-mark" aria-hidden="true">✓</div>
+      <div class="achievement-mark" aria-hidden="true">${iconSvg('shield')}</div>
     </div>
     <div class="achievement-stats">
-      <div class="achievement-stat"><strong>${longest}</strong>最长连续天数</div>
-      <div class="achievement-stat"><strong>${weekDone}/${weekDates.length}</strong>本周完成</div>
+      <div class="achievement-stat"><span class="achievement-stat-icon">${iconSvg('flame')}</span><strong>${longest}</strong>最长连续天数</div>
+      <div class="achievement-stat"><span class="achievement-stat-icon">${iconSvg('calendar')}</span><strong>${weekDone}/${weekDates.length}</strong>本周完成</div>
     </div>
     <div class="badge-grid">${badges}</div>
   `;

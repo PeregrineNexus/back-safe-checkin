@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260512-storage-guard';
+const CACHE_NAME = 'back-safe-checkin-v20260512-realistic-icons';
 const APP_SHELL = [
   './',
   './index.html',
