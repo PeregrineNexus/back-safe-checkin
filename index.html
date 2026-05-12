@@ -1205,20 +1205,140 @@ const exercisePhotoMap = Object.fromEntries(exerciseImageTypes.map(type=>[
 ]));
 const slideState = {};
 const KEY = 'pretty_back_checkin_history_v3';
+const BACKUP_KEY = 'pretty_back_checkin_history_v3_backup';
+const MIGRATION_KEY = 'pretty_back_checkin_history_v3_migrated';
+const LEGACY_HISTORY_KEYS = [
+  'pretty_back_checkin_history_v2',
+  'pretty_back_checkin_history',
+  'back_safe_checkin_history',
+  'checkin_history'
+];
 
-function history(){
-  const raw = localStorage.getItem(KEY);
-  if(!raw) return [];
+function safeStorageGet(key){
   try{
-    const parsed = JSON.parse(raw);
-    if(Array.isArray(parsed)) return parsed;
+    return localStorage.getItem(key);
   } catch (error){
-    console.warn('打卡记录解析失败，已回退为空列表。', error);
+    console.warn('读取本地打卡记录失败。', error);
+    return null;
   }
-  localStorage.removeItem(KEY);
+}
+
+function safeStorageSet(key, value){
+  try{
+    localStorage.setItem(key, value);
+  } catch (error){
+    console.warn('保存本地打卡记录失败。', error);
+  }
+}
+
+function safeStorageKeys(){
+  try{
+    return Array.from({length:localStorage.length}, (_, index)=>localStorage.key(index)).filter(Boolean);
+  } catch (error){
+    console.warn('扫描本地打卡记录失败。', error);
+    return [];
+  }
+}
+
+function isDateString(value){
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function normalizeRecord(record, fallbackDate){
+  if(typeof record === 'string') record = {date:record};
+  if(!record || typeof record !== 'object') return null;
+  const date = isDateString(record.date) ? record.date : fallbackDate;
+  if(!isDateString(date)) return null;
+  const plan = typeof record.plan === 'string' && record.plan.trim() ? record.plan : planForDate(date).name;
+  const status = Number.isFinite(Number(record.status)) ? Number(record.status) : 3;
+  const note = typeof record.note === 'string' && record.note.trim() ? record.note : '已完成今日计划';
+  return {date, plan, status, note};
+}
+
+function normalizeHistoryList(records){
+  const map = new Map();
+  records
+    .map(record=>normalizeRecord(record))
+    .filter(Boolean)
+    .forEach(record=>map.set(record.date, record));
+  return [...map.values()].sort((a,b)=>b.date.localeCompare(a.date));
+}
+
+function normalizeHistoryValue(value){
+  if(Array.isArray(value)) return normalizeHistoryList(value);
+  if(value && typeof value === 'object'){
+    const records = Object.entries(value).map(([date, record])=>{
+      if(record === false || record === null) return null;
+      return normalizeRecord(record === true ? {date} : record, date);
+    });
+    return normalizeHistoryList(records.filter(Boolean));
+  }
   return [];
 }
-function saveHistory(arr){localStorage.setItem(KEY, JSON.stringify(arr))}
+
+function parseHistoryValue(raw, key){
+  if(!raw) return [];
+  try{
+    return normalizeHistoryValue(JSON.parse(raw));
+  } catch (error){
+    console.warn(`打卡记录解析失败，已保留原始数据：${key}`, error);
+    return [];
+  }
+}
+
+function isExplicitEmptyHistory(raw){
+  if(typeof raw !== 'string') return false;
+  const trimmed = raw.trim();
+  return trimmed === '[]' || trimmed === '{}';
+}
+
+function discoverLegacyHistoryKeys(){
+  const fuzzyKeys = safeStorageKeys().filter(key=>{
+    const lower = key.toLowerCase();
+    return lower.includes('checkin') || lower.includes('pretty_back') || lower.includes('history');
+  }).filter(key=>![KEY, BACKUP_KEY, MIGRATION_KEY].includes(key));
+  return [...new Set([...LEGACY_HISTORY_KEYS, ...fuzzyKeys])];
+}
+
+function recoverLegacyHistory(){
+  const records = discoverLegacyHistoryKeys().flatMap(key=>parseHistoryValue(safeStorageGet(key), key));
+  return normalizeHistoryList(records);
+}
+
+function history(){
+  const raw = safeStorageGet(KEY);
+  const records = parseHistoryValue(raw, KEY);
+  if(records.length || isExplicitEmptyHistory(raw)){
+    if(records.length && safeStorageGet(BACKUP_KEY) !== JSON.stringify(records)){
+      safeStorageSet(BACKUP_KEY, JSON.stringify(records));
+    }
+    return records;
+  }
+
+  const backupRaw = safeStorageGet(BACKUP_KEY);
+  const backupRecords = parseHistoryValue(backupRaw, BACKUP_KEY);
+  if(backupRecords.length){
+    saveHistory(backupRecords);
+    return backupRecords;
+  }
+
+  if(safeStorageGet(MIGRATION_KEY) !== '1'){
+    const legacyRecords = recoverLegacyHistory();
+    safeStorageSet(MIGRATION_KEY, '1');
+    if(legacyRecords.length){
+      saveHistory(legacyRecords);
+      return legacyRecords;
+    }
+  }
+  return [];
+}
+
+function saveHistory(arr){
+  const records = normalizeHistoryList(arr);
+  const payload = JSON.stringify(records);
+  safeStorageSet(KEY, payload);
+  safeStorageSet(BACKUP_KEY, payload);
+}
 function getRecord(date){return history().find(r=>r.date===date)}
 function clamp(num, min, max){return Math.max(min, Math.min(max, num))}
 function addDays(date, days){
