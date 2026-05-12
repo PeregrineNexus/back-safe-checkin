@@ -597,7 +597,7 @@
     .photo-stage{
       position:relative;
       overflow:hidden;
-      aspect-ratio:4 / 3;
+      aspect-ratio:var(--photo-aspect, 4 / 3);
       background:linear-gradient(180deg,#F8FBFF 0%,#EEF4FF 100%);
     }
     .photo-stage > img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1199,17 +1199,20 @@ const rawPhotoMap = {
   ]
 };
 
+const DEFAULT_PHOTO_ASPECT = 4 / 3;
+const WIDE_PHOTO_ASPECT = 16 / 9;
+
 const collagePhotoMap = {
-  deadbug:{src:'assets/img_01.png', startY:0.15},
-  bridge:{src:'assets/img_02.png', startY:0.12, thumbStartY:0.22, thumbInsetX:0.12},
-  birddog:{src:'assets/img_03.png', startY:0.12},
-  boxsquat:{src:'assets/img_04.png', startY:0.12},
-  clam:{src:'assets/img_05.png', startY:0.12},
-  mcgill:{src:'assets/img_06.png', startY:0.08},
-  row:{src:'assets/img_07.png', startY:0.12},
-  sideplank:{src:'assets/img_08.png', startY:0.08},
-  step:{src:'assets/img_09.png', startY:0.10},
-  wall:{src:'assets/img_10.png', startY:0.07}
+  deadbug:{src:'assets/img_01.png', startY:0.15, insetX:0.06},
+  bridge:{src:'assets/img_02.png', aspect:WIDE_PHOTO_ASPECT, startY:0.28, insetLeft:0.01, insetRight:0.01, bottomTrim:0, thumbStartY:0.28, thumbInsetX:0.20},
+  birddog:{src:'assets/img_03.png', aspect:WIDE_PHOTO_ASPECT, startY:0.19, insetLeft:0.02, insetRight:0.02, bottomTrim:0, thumbStartY:0.19, thumbInsetX:0.04},
+  boxsquat:{src:'assets/img_04.png', startY:0.12, insetX:0.07},
+  clam:{src:'assets/img_05.png', aspect:WIDE_PHOTO_ASPECT, startY:0.27, insetLeft:0.02, insetRight:0.02, bottomTrim:0, thumbStartY:0.27, thumbInsetX:0.20},
+  mcgill:{src:'assets/img_06.png', aspect:WIDE_PHOTO_ASPECT, startY:0.30, insetLeft:0, insetRight:0, bottomTrim:0, thumbStartY:0.30, thumbInsetLeft:0.20, thumbInsetRight:0.20},
+  row:{src:'assets/img_07.png', startY:0.12, insetX:0.07},
+  sideplank:{src:'assets/img_08.png', aspect:WIDE_PHOTO_ASPECT, startY:0.27, insetLeft:0, insetRight:0.01, bottomTrim:0, thumbStartY:0.27, thumbInsetX:0.20},
+  step:{src:'assets/img_09.png', startY:0.10, insetX:0.07},
+  wall:{src:'assets/img_10.png', startY:0.07, insetX:0.06}
 };
 
 const processedPhotoMap = {};
@@ -1352,50 +1355,28 @@ function loadImage(src){
   });
 }
 
-function cropCollagePanel(img, panelIndex, config){
+function getPhotoAspect(type){
+  return collagePhotoMap[type]?.aspect || DEFAULT_PHOTO_ASPECT;
+}
+
+function getPhotoAspectCss(type){
+  return `${getPhotoAspect(type).toFixed(4)} / 1`;
+}
+
+function getCollagePanelCrop(img, panelIndex, config){
+  const aspect = config.aspect || DEFAULT_PHOTO_ASPECT;
   const panelWidth = img.naturalWidth / 3;
   const insetLeft = Math.round(panelWidth * (config.insetLeft ?? config.insetX ?? 0.10));
   const insetRight = Math.round(panelWidth * (config.insetRight ?? config.insetX ?? 0.04));
   const cropWidth = Math.round(panelWidth - insetLeft - insetRight);
-  const cropHeight = Math.round(cropWidth * 3 / 4);
+  const cropHeight = Math.round(cropWidth / aspect);
   const maxY = Math.max(0, img.naturalHeight - cropHeight - Math.round(img.naturalHeight * (config.bottomTrim ?? 0.02)));
   const startY = clamp(Math.round(img.naturalHeight * (config.startY ?? 0.12)), 0, maxY);
   const startX = Math.round(panelIndex * panelWidth + insetLeft);
-  const canvas = document.createElement('canvas');
-  canvas.width = 960;
-  canvas.height = 720;
-  const ctx = canvas.getContext('2d');
-  if(!ctx) return img.src;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, startX, startY, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL('image/jpeg', 0.92);
+  return {startX, startY, cropWidth, cropHeight};
 }
 
-function buildCssCrop(src, crop, alt){
-  return {src, alt, crop};
-}
-
-function buildCollageSlideFallback(img, panelIndex, config){
-  const panelWidth = img.naturalWidth / 3;
-  const insetLeft = Math.round(panelWidth * (config.insetLeft ?? config.insetX ?? 0.10));
-  const insetRight = Math.round(panelWidth * (config.insetRight ?? config.insetX ?? 0.04));
-  const cropWidth = Math.round(panelWidth - insetLeft - insetRight);
-  const cropHeight = Math.round(cropWidth * 3 / 4);
-  const maxY = Math.max(0, img.naturalHeight - cropHeight - Math.round(img.naturalHeight * (config.bottomTrim ?? 0.02)));
-  const startY = clamp(Math.round(img.naturalHeight * (config.startY ?? 0.12)), 0, maxY);
-  const startX = Math.round(panelIndex * panelWidth + insetLeft);
-  return buildCssCrop(img.src, {
-    imageWidth: img.naturalWidth,
-    imageHeight: img.naturalHeight,
-    cropX: startX,
-    cropY: startY,
-    cropWidth,
-    cropHeight
-  }, `panel-${panelIndex + 1}`);
-}
-
-function buildCollageThumbFallback(img, config){
+function getCollageThumbCrop(img, config){
   const panelWidth = img.naturalWidth / 3;
   const thumbInsetX = config.thumbInsetX ?? config.insetX ?? 0.10;
   const insetLeft = Math.round(panelWidth * (config.thumbInsetLeft ?? config.insetLeft ?? thumbInsetX));
@@ -1407,13 +1388,58 @@ function buildCollageThumbFallback(img, config){
     0,
     maxY
   );
+  return {startX:insetLeft, startY, cropWidth, cropHeight:cropWidth};
+}
+
+function cropImageToDataUrl(img, crop, width, height, quality = 0.92){
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return img.src;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, crop.startX, crop.startY, crop.cropWidth, crop.cropHeight, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', quality);
+}
+
+function cropCollagePanel(img, panelIndex, config){
+  const aspect = config.aspect || DEFAULT_PHOTO_ASPECT;
+  const crop = getCollagePanelCrop(img, panelIndex, config);
+  const width = 960;
+  const height = Math.round(width / aspect);
+  return cropImageToDataUrl(img, crop, width, height);
+}
+
+function cropCollageThumb(img, config){
+  return cropImageToDataUrl(img, getCollageThumbCrop(img, config), 512, 512, 0.9);
+}
+
+function buildCssCrop(src, crop, alt){
+  return {src, alt, crop};
+}
+
+function buildCollageSlideFallback(img, panelIndex, config){
+  const crop = getCollagePanelCrop(img, panelIndex, config);
   return buildCssCrop(img.src, {
     imageWidth: img.naturalWidth,
     imageHeight: img.naturalHeight,
-    cropX: insetLeft,
-    cropY: startY,
-    cropWidth,
-    cropHeight: cropWidth
+    cropX: crop.startX,
+    cropY: crop.startY,
+    cropWidth: crop.cropWidth,
+    cropHeight: crop.cropHeight
+  }, `panel-${panelIndex + 1}`);
+}
+
+function buildCollageThumbFallback(img, config){
+  const crop = getCollageThumbCrop(img, config);
+  return buildCssCrop(img.src, {
+    imageWidth: img.naturalWidth,
+    imageHeight: img.naturalHeight,
+    cropX: crop.startX,
+    cropY: crop.startY,
+    cropWidth: crop.cropWidth,
+    cropHeight: crop.cropHeight
   }, 'thumb');
 }
 
@@ -1423,7 +1449,7 @@ function buildCollagePhotos(type, img, config){
       src:cropCollagePanel(img, index, config),
       alt:`${type}-${index + 1}`
     }));
-    processedThumbMap[type] = processedPhotoMap[type][0];
+    processedThumbMap[type] = {src:cropCollageThumb(img, config), alt:`${type}-thumb`};
   } catch (error){
     console.warn(`图片导出受限，改用 CSS 裁切回退：${type}`, error);
     processedPhotoMap[type] = [0,1,2].map(index=>{
@@ -1528,8 +1554,9 @@ function planForDate(dateStr){
 
 function renderExerciseCard(item, context){
   const cardKey = `${context}-${item.id}`;
+  const photoAspect = getPhotoAspectCss(item.id);
   return `
-    <article class="exercise ${context === 'calendar' ? 'calendar-exercise' : ''}" id="card-${cardKey}" aria-labelledby="title-${cardKey}">
+    <article class="exercise ${context === 'calendar' ? 'calendar-exercise' : ''}" id="card-${cardKey}" aria-labelledby="title-${cardKey}" style="--photo-aspect:${photoAspect}">
       <button class="exercise-top" type="button" aria-expanded="false" aria-controls="body-${cardKey}" onclick="toggleExerciseCard('${cardKey}')">
         <div class="thumb">${renderThumbPhoto(item.id)}</div>
         <div class="exercise-info">
