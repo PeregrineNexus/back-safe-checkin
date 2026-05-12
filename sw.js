@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260512-crop';
+const CACHE_NAME = 'back-safe-checkin-v20260512-independent-images';
 const APP_SHELL = [
   './',
   './index.html',

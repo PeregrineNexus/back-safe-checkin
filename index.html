@@ -512,17 +512,6 @@
       border-radius:24px;
       background:#F8FBFF;
     }
-    .crop-photo{
-      position:relative;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-    }
-    .crop-photo img{
-      position:absolute;
-      max-width:none;
-      display:block;
-    }
     .thumb > img{width:100%;height:100%;object-fit:cover;display:block}
     .exercise-info{flex:1;min-width:0}
     .exercise-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -1191,32 +1180,29 @@ const weekday = today.getDay();
 const weekNames = ['周日','周一','周二','周三','周四','周五','周六'];
 document.getElementById('dateTitle').textContent = `${today.getMonth()+1}月${today.getDate()}日 ${weekNames[weekday]}`;
 
-const rawPhotoMap = {
-  walk: [
-    {src:'assets/img_11.png', alt:'walk-1'},
-    {src:'assets/img_12.png', alt:'walk-2'},
-    {src:'assets/img_13.png', alt:'walk-3'}
-  ]
+const ILLUSTRATION_ASPECT = 16 / 9;
+const exerciseImageTypes = ['deadbug','bridge','birddog','boxsquat','clam','mcgill','row','sideplank','step','wall','walk','stretch'];
+const exerciseAltNames = {
+  deadbug:'死虫式',
+  bridge:'臀桥',
+  birddog:'鸟狗式',
+  boxsquat:'箱式深蹲',
+  clam:'侧卧蚌式开合',
+  mcgill:'麦吉尔卷腹改良版',
+  row:'站姿弹力带划船',
+  sideplank:'膝盖版侧平板',
+  step:'低台阶踏步',
+  wall:'靠墙俯卧撑',
+  walk:'快走',
+  stretch:'恢复拉伸'
 };
-
-const DEFAULT_PHOTO_ASPECT = 4 / 3;
-const WIDE_PHOTO_ASPECT = 16 / 9;
-
-const collagePhotoMap = {
-  deadbug:{src:'assets/img_01.png', startY:0.15, insetX:0.06},
-  bridge:{src:'assets/img_02.png', aspect:WIDE_PHOTO_ASPECT, startY:0.28, insetLeft:0.01, insetRight:0.01, bottomTrim:0, thumbStartY:0.28, thumbInsetX:0.20},
-  birddog:{src:'assets/img_03.png', aspect:WIDE_PHOTO_ASPECT, startY:0.19, insetLeft:0.02, insetRight:0.02, bottomTrim:0, thumbStartY:0.19, thumbInsetX:0.04},
-  boxsquat:{src:'assets/img_04.png', startY:0.12, insetX:0.07},
-  clam:{src:'assets/img_05.png', aspect:WIDE_PHOTO_ASPECT, startY:0.27, insetLeft:0.02, insetRight:0.02, bottomTrim:0, thumbStartY:0.27, thumbInsetX:0.20},
-  mcgill:{src:'assets/img_06.png', aspect:WIDE_PHOTO_ASPECT, startY:0.30, insetLeft:0, insetRight:0, bottomTrim:0, thumbStartY:0.30, thumbInsetLeft:0.20, thumbInsetRight:0.20},
-  row:{src:'assets/img_07.png', startY:0.12, insetX:0.07},
-  sideplank:{src:'assets/img_08.png', aspect:WIDE_PHOTO_ASPECT, startY:0.27, insetLeft:0, insetRight:0.01, bottomTrim:0, thumbStartY:0.27, thumbInsetX:0.20},
-  step:{src:'assets/img_09.png', startY:0.10, insetX:0.07},
-  wall:{src:'assets/img_10.png', startY:0.07, insetX:0.06}
-};
-
-const processedPhotoMap = {};
-const processedThumbMap = {};
+const exercisePhotoMap = Object.fromEntries(exerciseImageTypes.map(type=>[
+  type,
+  [1,2,3].map(step=>({
+    src:`assets/exercises/${type}-${step}.svg`,
+    alt:`${exerciseAltNames[type]}第${step}步示意图`
+  }))
+]));
 const slideState = {};
 const KEY = 'pretty_back_checkin_history_v3';
 
@@ -1290,223 +1276,36 @@ function createPlaceholderHtml(size){
   return `<div class="photo-placeholder" style="font-size:${size === 'thumb' ? '12px' : '13px'};">暂无图片</div>`;
 }
 
-function createSvgDataUrl(svg){
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-}
-
-function buildStretchIllustrations(){
-  const variants = [
-    {
-      accent:'#8BC7FF',
-      body:'M176 314 Q244 246 329 314',
-      arms:'M200 278 Q247 252 291 278',
-      legs:'M182 322 Q232 364 286 322',
-      extra:'<circle cx="258" cy="264" r="22" fill="none" stroke="#8BC7FF" stroke-width="4" opacity=".82"/><circle cx="258" cy="264" r="44" fill="none" stroke="#8BC7FF" stroke-width="4" opacity=".42"/><circle cx="258" cy="264" r="66" fill="none" stroke="#8BC7FF" stroke-width="4" opacity=".24"/>'
-    },
-    {
-      accent:'#6FD0B3',
-      body:'M170 320 Q252 236 340 320',
-      arms:'M205 330 Q242 286 271 330 M271 330 Q306 286 334 330',
-      legs:'M195 346 Q222 382 248 346 M267 346 Q300 382 329 346',
-      extra:'<path d="M146 286 Q188 224 248 230 Q316 236 356 286" fill="none" stroke="#6FD0B3" stroke-width="8" stroke-linecap="round" opacity=".55"/>'
-    },
-    {
-      accent:'#F9C269',
-      body:'M188 314 Q234 256 308 276 Q346 286 372 334',
-      arms:'M208 300 Q243 272 279 286',
-      legs:'M200 332 Q236 370 272 338 M273 338 Q315 300 356 324',
-      extra:'<path d="M324 286 Q350 260 378 272 Q392 278 396 300" fill="none" stroke="#F9C269" stroke-width="8" stroke-linecap="round" opacity=".52"/>'
-    }
-  ];
-
-  return variants.map((variant, index)=>{
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540">
-        <defs>
-          <linearGradient id="bg${index}" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#F8FBFF"/>
-            <stop offset="100%" stop-color="#ECF5FF"/>
-          </linearGradient>
-        </defs>
-        <rect width="720" height="540" rx="42" fill="url(#bg${index})"/>
-        <rect x="0" y="402" width="720" height="138" fill="#E8EEF8"/>
-        <rect x="124" y="314" width="472" height="110" rx="34" fill="#D8E4F4"/>
-        <rect x="136" y="326" width="448" height="86" rx="28" fill="#F7FBFF"/>
-        <circle cx="230" cy="250" r="38" fill="#FFD6B5"/>
-        <path d="${variant.body}" fill="none" stroke="#475569" stroke-width="18" stroke-linecap="round"/>
-        <path d="${variant.arms}" fill="none" stroke="#475569" stroke-width="14" stroke-linecap="round"/>
-        <path d="${variant.legs}" fill="none" stroke="#475569" stroke-width="16" stroke-linecap="round"/>
-        <circle cx="230" cy="250" r="22" fill="#9CA3AF" opacity=".12"/>
-        ${variant.extra}
-        <circle cx="68" cy="68" r="26" fill="${variant.accent}"/>
-        <text x="68" y="76" text-anchor="middle" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${index + 1}</text>
-      </svg>
-    `;
-    return {src:createSvgDataUrl(svg), alt:`stretch-${index + 1}`};
-  });
-}
-
-function loadImage(src){
-  return new Promise((resolve, reject)=>{
-    const img = new Image();
-    img.onload = ()=>resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
 function getPhotoAspect(type){
-  return collagePhotoMap[type]?.aspect || DEFAULT_PHOTO_ASPECT;
+  return exercisePhotoMap[type] ? ILLUSTRATION_ASPECT : 4 / 3;
 }
 
 function getPhotoAspectCss(type){
   return `${getPhotoAspect(type).toFixed(4)} / 1`;
 }
 
-function getCollagePanelCrop(img, panelIndex, config){
-  const aspect = config.aspect || DEFAULT_PHOTO_ASPECT;
-  const panelWidth = img.naturalWidth / 3;
-  const insetLeft = Math.round(panelWidth * (config.insetLeft ?? config.insetX ?? 0.10));
-  const insetRight = Math.round(panelWidth * (config.insetRight ?? config.insetX ?? 0.04));
-  const cropWidth = Math.round(panelWidth - insetLeft - insetRight);
-  const cropHeight = Math.round(cropWidth / aspect);
-  const maxY = Math.max(0, img.naturalHeight - cropHeight - Math.round(img.naturalHeight * (config.bottomTrim ?? 0.02)));
-  const startY = clamp(Math.round(img.naturalHeight * (config.startY ?? 0.12)), 0, maxY);
-  const startX = Math.round(panelIndex * panelWidth + insetLeft);
-  return {startX, startY, cropWidth, cropHeight};
-}
-
-function getCollageThumbCrop(img, config){
-  const panelWidth = img.naturalWidth / 3;
-  const thumbInsetX = config.thumbInsetX ?? config.insetX ?? 0.10;
-  const insetLeft = Math.round(panelWidth * (config.thumbInsetLeft ?? config.insetLeft ?? thumbInsetX));
-  const insetRight = Math.round(panelWidth * (config.thumbInsetRight ?? config.insetRight ?? Math.max(0.04, thumbInsetX * 0.5)));
-  const cropWidth = Math.round(panelWidth - insetLeft - insetRight);
-  const maxY = Math.max(0, img.naturalHeight - cropWidth - Math.round(img.naturalHeight * (config.thumbBottomTrim ?? 0.03)));
-  const startY = clamp(
-    Math.round(img.naturalHeight * (config.thumbStartY ?? config.startY ?? 0.12)),
-    0,
-    maxY
-  );
-  return {startX:insetLeft, startY, cropWidth, cropHeight:cropWidth};
-}
-
-function cropImageToDataUrl(img, crop, width, height, quality = 0.92){
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  if(!ctx) return img.src;
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, crop.startX, crop.startY, crop.cropWidth, crop.cropHeight, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL('image/jpeg', quality);
-}
-
-function cropCollagePanel(img, panelIndex, config){
-  const aspect = config.aspect || DEFAULT_PHOTO_ASPECT;
-  const crop = getCollagePanelCrop(img, panelIndex, config);
-  const width = 960;
-  const height = Math.round(width / aspect);
-  return cropImageToDataUrl(img, crop, width, height);
-}
-
-function cropCollageThumb(img, config){
-  return cropImageToDataUrl(img, getCollageThumbCrop(img, config), 512, 512, 0.9);
-}
-
-function buildCssCrop(src, crop, alt){
-  return {src, alt, crop};
-}
-
-function buildCollageSlideFallback(img, panelIndex, config){
-  const crop = getCollagePanelCrop(img, panelIndex, config);
-  return buildCssCrop(img.src, {
-    imageWidth: img.naturalWidth,
-    imageHeight: img.naturalHeight,
-    cropX: crop.startX,
-    cropY: crop.startY,
-    cropWidth: crop.cropWidth,
-    cropHeight: crop.cropHeight
-  }, `panel-${panelIndex + 1}`);
-}
-
-function buildCollageThumbFallback(img, config){
-  const crop = getCollageThumbCrop(img, config);
-  return buildCssCrop(img.src, {
-    imageWidth: img.naturalWidth,
-    imageHeight: img.naturalHeight,
-    cropX: crop.startX,
-    cropY: crop.startY,
-    cropWidth: crop.cropWidth,
-    cropHeight: crop.cropHeight
-  }, 'thumb');
-}
-
-function buildCollagePhotos(type, img, config){
-  try{
-    processedPhotoMap[type] = [0,1,2].map(index=>({
-      src:cropCollagePanel(img, index, config),
-      alt:`${type}-${index + 1}`
-    }));
-    processedThumbMap[type] = {src:cropCollageThumb(img, config), alt:`${type}-thumb`};
-  } catch (error){
-    console.warn(`图片导出受限，改用 CSS 裁切回退：${type}`, error);
-    processedPhotoMap[type] = [0,1,2].map(index=>{
-      const photo = buildCollageSlideFallback(img, index, config);
-      photo.alt = `${type}-${index + 1}`;
-      return photo;
-    });
-    processedThumbMap[type] = buildCollageThumbFallback(img, config);
-    processedThumbMap[type].alt = `${type}-thumb`;
-  }
-}
-
 async function prepareExercisePhotos(){
-  const entries = Object.entries(collagePhotoMap);
-  await Promise.all(entries.map(async ([type, config])=>{
-    const img = await loadImage(config.src);
-    buildCollagePhotos(type, img, config);
-  }));
-  processedPhotoMap.stretch = buildStretchIllustrations();
+  return true;
 }
 
 function getExercisePhotos(type){
-  return processedPhotoMap[type] || rawPhotoMap[type] || [];
+  return exercisePhotoMap[type] || [];
 }
 
 function getExerciseThumb(type){
-  return processedThumbMap[type] || getExercisePhotos(type)[0];
-}
-
-function renderCropPhoto(photo){
-  const crop = photo.crop;
-  const width = crop.imageWidth / crop.cropWidth * 100;
-  const height = crop.imageHeight / crop.cropHeight * 100;
-  const left = -crop.cropX / crop.cropWidth * 100;
-  const top = -crop.cropY / crop.cropHeight * 100;
-  return `
-    <div class="crop-photo" aria-label="${photo.alt}">
-      <img
-        src="${photo.src}"
-        alt="${photo.alt}"
-        loading="lazy"
-        style="width:${width}%;height:${height}%;left:${left}%;top:${top}%"
-      >
-    </div>
-  `;
+  return getExercisePhotos(type)[0];
 }
 
 function renderThumbPhoto(type){
   const photo = getExerciseThumb(type);
   if(!photo) return createPlaceholderHtml('thumb');
-  return photo.crop ? renderCropPhoto(photo) : `<img src="${photo.src}" alt="${photo.alt}">`;
+  return `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">`;
 }
 
 function renderSlidePhoto(type, index){
   const photo = getExercisePhotos(type)[index];
   if(!photo) return createPlaceholderHtml('slide');
-  return photo.crop ? renderCropPhoto(photo) : `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">`;
+  return `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">`;
 }
 
 const plans = {
@@ -2080,8 +1879,7 @@ async function bootstrap(){
   try{
     await prepareExercisePhotos();
   } catch (error){
-    console.warn('图片裁切失败，将使用已可用资源继续渲染。', error);
-    processedPhotoMap.stretch = buildStretchIllustrations();
+    console.warn('训练图片准备失败，将使用占位内容继续渲染。', error);
   }
   renderWorkout();
   renderCalendar();
