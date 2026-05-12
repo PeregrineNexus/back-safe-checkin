@@ -1,11 +1,15 @@
-const CACHE_NAME = 'back-safe-checkin-v20260512-realistic-icons';
+const CACHE_NAME = 'back-safe-checkin-v20260512-achievement-icons';
 const APP_SHELL = [
   './',
   './index.html',
   './site.webmanifest',
   './assets/icons/app-icon-180.png',
   './assets/icons/app-icon-192.png',
-  './assets/icons/app-icon-512.png'
+  './assets/icons/app-icon-512.png',
+  './assets/icons/achievement-flame.png',
+  './assets/icons/achievement-trophy.png',
+  './assets/icons/achievement-perfect-week.png',
+  './assets/icons/achievement-walk.png'
 ];
 
 self.addEventListener('install', event => {

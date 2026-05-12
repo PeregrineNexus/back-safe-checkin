@@ -469,6 +469,28 @@
       border:1px solid rgba(236,253,245,.22);
       box-shadow:none;
     }
+    .achievement-image-icon{
+      overflow:visible;
+      color:inherit;
+      background:transparent!important;
+      border:0!important;
+      box-shadow:none!important;
+    }
+    .card-feature-icon.achievement-image-icon{
+      width:44px;
+      height:44px;
+    }
+    .badge-icon.achievement-image-icon{
+      width:34px;
+      height:34px;
+    }
+    .achievement-image-icon img{
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:contain;
+      filter:drop-shadow(0 6px 10px rgba(4,120,87,.18));
+    }
     .badge-grid{
       position:relative;
       z-index:1;
@@ -1606,6 +1628,16 @@ function iconSvg(name){
   `;
 }
 
+function achievementIcon(name){
+  const icons = {
+    trophy:'assets/icons/achievement-trophy.png',
+    flame:'assets/icons/achievement-flame.png',
+    walk:'assets/icons/achievement-walk.png',
+    spark:'assets/icons/achievement-perfect-week.png'
+  };
+  return `<img src="${icons[name] || icons.trophy}" alt="" loading="lazy" decoding="async">`;
+}
+
 function getPlanKind(date){
   const name = planForDate(date).name;
   if(name.includes('康复力量')) return 'strength';
@@ -1680,7 +1712,7 @@ function renderAchievements(){
   el.innerHTML = `
     <div class="achievement-top">
       <div class="card-heading">
-        <div class="card-feature-icon">${iconSvg('trophy')}</div>
+        <div class="card-feature-icon achievement-image-icon">${achievementIcon('trophy')}</div>
         <div>
           <div class="card-kicker">打卡成就</div>
           <div class="card-title">本月完成 ${monthDone} 天</div>
@@ -1690,13 +1722,13 @@ function renderAchievements(){
     </div>
     <div class="badge-grid">
       <div class="badge-card active">
-        <span class="badge-icon">${iconSvg('flame')}</span>连续 ${longest} 天
+        <span class="badge-icon achievement-image-icon">${achievementIcon('flame')}</span>连续 ${longest} 天
       </div>
       <div class="badge-card ${walkBadgeActive ? 'active' : ''}">
-        <span class="badge-icon">${iconSvg('walk')}</span>快走达人
+        <span class="badge-icon achievement-image-icon">${achievementIcon('walk')}</span>快走达人
       </div>
       <div class="badge-card ${perfectWeekActive ? 'active' : ''}">
-        <span class="badge-icon">${iconSvg('spark')}</span>本周满勤
+        <span class="badge-icon achievement-image-icon">${achievementIcon('spark')}</span>本周满勤
       </div>
     </div>
   `;
