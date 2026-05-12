@@ -287,7 +287,7 @@
       background:linear-gradient(145deg,#D1FAE5 0%,#ECFDF5 100%);
       box-shadow:0 12px 22px rgba(16,185,129,.14);
     }
-    .card-feature-icon svg,.stat-icon svg,.week-day-icon svg,.achievement-stat-icon svg,.badge-icon svg,.achievement-mark svg{
+    .card-feature-icon svg,.stat-icon svg,.week-day-icon svg,.badge-icon svg{
       width:1em;
       height:1em;
       display:block;
@@ -469,82 +469,30 @@
       border:1px solid rgba(236,253,245,.22);
       box-shadow:none;
     }
-    .achievement-mark{
-      width:66px;
-      height:66px;
-      flex:0 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:24px;
-      background:rgba(236,253,245,.18);
-      border:1px solid rgba(236,253,245,.32);
-      color:#ECFDF5;
-      font-size:32px;
-      font-weight:950;
-    }
-    .achievement-stats{
-      position:relative;
-      z-index:1;
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-      margin-top:16px;
-    }
-    .achievement-stat{
-      display:grid;
-      grid-template-columns:auto 1fr;
-      column-gap:10px;
-      align-items:center;
-      padding:12px;
-      border-radius:20px;
-      background:rgba(255,255,255,.13);
-      border:1px solid rgba(255,255,255,.16);
-      color:rgba(236,253,245,.86);
-      font-size:12px;
-      font-weight:850;
-    }
-    .achievement-stat-icon{
-      width:32px;
-      height:32px;
-      grid-row:span 2;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:13px;
-      background:rgba(236,253,245,.16);
-      color:#ECFDF5;
-      font-size:17px;
-    }
-    .achievement-stat strong{
-      display:block;
-      color:#fff;
-      font-size:24px;
-      font-weight:950;
-      letter-spacing:-.5px;
-    }
     .badge-grid{
       position:relative;
       z-index:1;
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:8px;
-      margin-top:10px;
+      margin-top:16px;
     }
     .badge-card{
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
+      gap:6px;
       min-height:64px;
-      padding:10px 8px;
+      padding:10px 6px;
       border-radius:18px;
       background:rgba(255,255,255,.11);
       border:1px solid rgba(255,255,255,.14);
       color:rgba(236,253,245,.72);
       text-align:center;
-      font-size:11px;
-      font-weight:850;
+      font-size:12px;
+      font-weight:900;
+      line-height:1.15;
     }
     .badge-card.active{
       background:#ECFDF5;
@@ -554,10 +502,10 @@
     .badge-icon{
       width:28px;
       height:28px;
+      flex:0 0 auto;
       display:flex;
       align-items:center;
       justify-content:center;
-      margin-bottom:4px;
       border-radius:999px;
       background:rgba(255,255,255,.12);
       color:currentColor;
@@ -1727,15 +1675,8 @@ function renderAchievements(){
   const weekDates = getWeekTargetDates(today);
   const doneSet = new Set(uniqueRecordDates(records));
   const weekDone = weekDates.filter(date=>doneSet.has(date)).length;
-  const badges = [
-    {icon:'shield', title:'稳定护腰', active:monthDone >= 3},
-    {icon:'walk', title:'快走达人', active:records.some(record=>record.plan?.includes('走'))},
-    {icon:'spark', title:'本周满勤', active:weekDone >= weekDates.length}
-  ].map(badge=>`
-    <div class="badge-card ${badge.active ? 'active' : ''}">
-      <span class="badge-icon">${iconSvg(badge.icon)}</span>${badge.title}
-    </div>
-  `).join('');
+  const walkBadgeActive = records.some(record=>record.plan?.includes('走'));
+  const perfectWeekActive = weekDone >= weekDates.length;
   el.innerHTML = `
     <div class="achievement-top">
       <div class="card-heading">
@@ -1746,13 +1687,18 @@ function renderAchievements(){
           <div class="card-sub">最长连续 ${longest} 天，当前连续 ${currentStreak} 天。每一次稳定完成，都在帮腰背建立安全感。</div>
         </div>
       </div>
-      <div class="achievement-mark" aria-hidden="true">${iconSvg('shield')}</div>
     </div>
-    <div class="achievement-stats">
-      <div class="achievement-stat"><span class="achievement-stat-icon">${iconSvg('flame')}</span><strong>${longest}</strong>最长连续天数</div>
-      <div class="achievement-stat"><span class="achievement-stat-icon">${iconSvg('calendar')}</span><strong>${weekDone}/${weekDates.length}</strong>本周完成</div>
+    <div class="badge-grid">
+      <div class="badge-card active">
+        <span class="badge-icon">${iconSvg('flame')}</span>连续 ${longest} 天
+      </div>
+      <div class="badge-card ${walkBadgeActive ? 'active' : ''}">
+        <span class="badge-icon">${iconSvg('walk')}</span>快走达人
+      </div>
+      <div class="badge-card ${perfectWeekActive ? 'active' : ''}">
+        <span class="badge-icon">${iconSvg('spark')}</span>本周满勤
+      </div>
     </div>
-    <div class="badge-grid">${badges}</div>
   `;
 }
 
