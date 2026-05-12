@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260512-achievement-icons';
+const CACHE_NAME = 'back-safe-checkin-v20260512-achievement-icons-contrast';
 const APP_SHELL = [
   './',
   './index.html',
