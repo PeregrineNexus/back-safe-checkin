@@ -523,11 +523,17 @@
       font-size:12px;
       font-weight:900;
       line-height:1.15;
+      transition:background .22s ease,color .22s ease,border-color .22s ease,box-shadow .22s ease;
     }
     .badge-card.active{
       background:#FFFFFF;
       color:#047857;
       box-shadow:0 14px 24px rgba(15,118,110,.12);
+    }
+    .badge-card:not(.active){
+      background:rgba(248,250,252,.58);
+      border-color:rgba(148,163,184,.18);
+      color:#94A3B8;
     }
     .badge-icon{
       width:28px;
@@ -544,6 +550,9 @@
     .badge-card.active .badge-icon{
       background:transparent!important;
       border-color:transparent!important;
+    }
+    .badge-card:not(.active) .achievement-image-icon img{
+      filter:grayscale(1) saturate(.15) opacity(.52) drop-shadow(0 7px 10px rgba(100,116,139,.1));
     }
     .section-head{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 12px}
     h2{margin:0;font-size:21px;letter-spacing:-.4px}
@@ -1716,6 +1725,7 @@ function renderAchievements(){
   const weekDates = getWeekTargetDates(today);
   const doneSet = new Set(uniqueRecordDates(records));
   const weekDone = weekDates.filter(date=>doneSet.has(date)).length;
+  const streakBadgeActive = longest > 0;
   const walkBadgeActive = records.some(record=>record.plan?.includes('走'));
   const perfectWeekActive = weekDone >= weekDates.length;
   el.innerHTML = `
@@ -1730,7 +1740,7 @@ function renderAchievements(){
       </div>
     </div>
     <div class="badge-grid">
-      <div class="badge-card active">
+      <div class="badge-card ${streakBadgeActive ? 'active' : ''}">
         <span class="badge-icon achievement-image-icon">${achievementIcon('flame')}</span>连续 ${longest} 天
       </div>
       <div class="badge-card ${walkBadgeActive ? 'active' : ''}">
