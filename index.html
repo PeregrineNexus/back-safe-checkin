@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#F6FAFF" />
   <meta name="color-scheme" content="light only" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="护腰打卡" />
   <meta name="application-name" content="护腰打卡" />
@@ -34,7 +35,7 @@
       --status-bg:
         radial-gradient(circle at 18% 0%, rgba(37,99,235,.12), transparent 42%),
         linear-gradient(180deg,#F6FAFF 0%,#EEF4FC 100%);
-      --app-version:"2026.05.12-progress-cards";
+      --app-version:"2026.05.12-pwa-cache";
     }
     html{
       background:#F6FAFF;
@@ -2067,6 +2068,14 @@ async function bootstrap(){
 }
 
 bootstrap();
+
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').catch(error=>{
+      console.warn('离线缓存注册失败，页面仍可正常使用。', error);
+    });
+  });
+}
 </script>
 </body>
 </html>
