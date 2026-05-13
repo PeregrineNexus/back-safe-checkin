@@ -1,0 +1,54 @@
+name: Deploy to CloudBase
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy static site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check CloudBase secrets
+        id: secrets
+        env:
+          TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
+          TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+        run: |
+          if [ -z "$TCB_SECRET_ID" ] || [ -z "$TCB_SECRET_KEY" ]; then
+            echo "::warning::CloudBase deployment skipped. Add TCB_SECRET_ID and TCB_SECRET_KEY in GitHub repository secrets to enable auto deploy."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        if: steps.secrets.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install CloudBase CLI
+        if: steps.secrets.outputs.configured == 'true'
+        run: npm install -g @cloudbase/cli
+
+      - name: Login to CloudBase
+        if: steps.secrets.outputs.configured == 'true'
+        env:
+          TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
+          TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+        run: tcb login --apiKeyId "$TCB_SECRET_ID" --apiKey "$TCB_SECRET_KEY"
+
+      - name: Deploy to CloudBase Hosting
+        if: steps.secrets.outputs.configured == 'true'
+        env:
+          CLOUDBASE_ENV_ID: ${{ secrets.TCB_ENV_ID || 'check-in-d3ggzownm79a576fa' }}
+        run: bash deploy-cloudbase.sh
