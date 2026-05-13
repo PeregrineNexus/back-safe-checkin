@@ -31,7 +31,7 @@
       --motion-spring:cubic-bezier(.22,1,.36,1);
       --page-bg:none;
       --status-bg:none;
-      --app-version:"2026.05.13-actions-auto-live";
+      --app-version:"2026.05.13-image-cache-fix";
     }
     html{
       background:#FFFFFF;
@@ -1341,6 +1341,7 @@ const weekNames = ['周日','周一','周二','周三','周四','周五','周六
 document.getElementById('dateTitle').textContent = `${today.getMonth()+1}月${today.getDate()}日 ${weekNames[weekday]}`;
 
 const ILLUSTRATION_ASPECT = 16 / 9;
+const ASSET_VERSION = '20260513-image-cache-fix';
 const exerciseImageTypes = ['deadbug','bridge','birddog','boxsquat','clam','mcgill','row','sideplank','step','wall','walk','stretch'];
 const exerciseAltNames = {
   deadbug:'死虫式',
@@ -1634,6 +1635,33 @@ function createPlaceholderHtml(size){
   return `<div class="photo-placeholder" style="font-size:${size === 'thumb' ? '12px' : '13px'};">暂无图片</div>`;
 }
 
+function versionedAssetSrc(src){
+  const separator = src.includes('?') ? '&' : '?';
+  return `${src}${separator}v=${ASSET_VERSION}`;
+}
+
+function renderExerciseImage(photo, size){
+  if(!photo) return createPlaceholderHtml(size);
+  return `<img src="${versionedAssetSrc(photo.src)}" data-original-src="${photo.src}" alt="${photo.alt}" loading="lazy" decoding="async" onerror="recoverExerciseImage(this)">`;
+}
+
+function recoverExerciseImage(img){
+  const attempts = Number(img.dataset.retry || 0);
+  const originalSrc = img.dataset.originalSrc;
+  if(originalSrc && attempts < 2){
+    img.dataset.retry = String(attempts + 1);
+    const separator = originalSrc.includes('?') ? '&' : '?';
+    img.src = `${originalSrc}${separator}v=${ASSET_VERSION}&retry=${Date.now()}`;
+    return;
+  }
+
+  const placeholder = document.createElement('div');
+  placeholder.className = 'photo-placeholder';
+  placeholder.style.fontSize = img.closest('.thumb') ? '12px' : '13px';
+  placeholder.textContent = '图片加载失败';
+  img.replaceWith(placeholder);
+}
+
 function getPhotoAspect(type){
   return exercisePhotoMap[type] ? ILLUSTRATION_ASPECT : 4 / 3;
 }
@@ -1656,14 +1684,12 @@ function getExerciseThumb(type){
 
 function renderThumbPhoto(type){
   const photo = getExerciseThumb(type);
-  if(!photo) return createPlaceholderHtml('thumb');
-  return `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">`;
+  return renderExerciseImage(photo, 'thumb');
 }
 
 function renderSlidePhoto(type, index){
   const photo = getExercisePhotos(type)[index];
-  if(!photo) return createPlaceholderHtml('slide');
-  return `<img src="${photo.src}" alt="${photo.alt}" loading="lazy">`;
+  return renderExerciseImage(photo, 'slide');
 }
 
 const plans = {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-actions-auto-live';
+const CACHE_NAME = 'back-safe-checkin-v20260513-image-cache-fix';
 const APP_SHELL = [
   './',
   './index.html',
@@ -44,6 +44,11 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  if(url.pathname.includes('/assets/exercises/')){
+    event.respondWith(networkFirstAsset(request));
+    return;
+  }
+
   if(url.pathname.includes('/assets/') || url.pathname.endsWith('/site.webmanifest')){
     event.respondWith(cacheFirst(request));
   }
@@ -53,10 +58,23 @@ async function networkFirst(request){
   const cache = await caches.open(CACHE_NAME);
   try{
     const response = await fetch(request);
-    cache.put(request, response.clone());
+    if(response.ok) cache.put(request, response.clone());
     return response;
   } catch (error){
     return cache.match(request) || cache.match('./index.html');
+  }
+}
+
+async function networkFirstAsset(request){
+  const cache = await caches.open(CACHE_NAME);
+  try{
+    const response = await fetch(request);
+    if(response.ok) cache.put(request, response.clone());
+    return response;
+  } catch (error){
+    const cached = await cache.match(request);
+    if(cached) return cached;
+    throw error;
   }
 }
 
@@ -65,6 +83,6 @@ async function cacheFirst(request){
   const cached = await cache.match(request);
   if(cached) return cached;
   const response = await fetch(request);
-  cache.put(request, response.clone());
+  if(response.ok) cache.put(request, response.clone());
   return response;
 }
