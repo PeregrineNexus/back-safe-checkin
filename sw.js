@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-cloudbase-git';
+const CACHE_NAME = 'back-safe-checkin-v20260513-auto-deploy-check';
 const APP_SHELL = [
   './',
   './index.html',
