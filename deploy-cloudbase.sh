@@ -18,6 +18,9 @@ cp index.html sw.js site.webmanifest "$OUT_DIR/"
 cp -R assets "$OUT_DIR/assets"
 
 echo "Deploying static files to CloudBase environment: $ENV_ID"
-tcb hosting deploy "$OUT_DIR" -e "$ENV_ID"
+tcb hosting deploy "$OUT_DIR" / -e "$ENV_ID"
+
+echo "Deploying compatibility path: /check-in"
+tcb hosting deploy "$OUT_DIR" /check-in -e "$ENV_ID"
 
 echo "CloudBase deploy finished."
