@@ -31,7 +31,7 @@
       --motion-spring:cubic-bezier(.22,1,.36,1);
       --page-bg:none;
       --status-bg:none;
-      --app-version:"2026.05.13-carousel-surface-fix";
+      --app-version:"2026.05.13-week-bars-unified";
     }
     html{
       background:#FFFFFF;
@@ -388,10 +388,10 @@
       z-index:1;
       display:grid;
       grid-template-columns:repeat(6,1fr);
-      align-items:end;
+      align-items:stretch;
       gap:8px;
       margin-top:12px;
-      padding:10px 9px 9px;
+      padding:12px 9px 10px;
       border-radius:22px;
       background:linear-gradient(180deg,#F8FBFF 0%,#F1F5F9 100%);
     }
@@ -399,7 +399,9 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap:5px;
+      justify-content:space-between;
+      gap:6px;
+      min-height:78px;
       min-width:0;
       color:#94A3B8;
       font-size:11px;
@@ -408,6 +410,7 @@
     .week-day-icon{
       width:22px;
       height:22px;
+      flex:0 0 22px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -421,11 +424,13 @@
     .week-bar{
       width:100%;
       max-width:24px;
-      height:36px;
+      height:28px;
+      flex:0 0 28px;
       border-radius:999px;
       background:#E2E8F0;
       box-shadow:inset 0 0 0 1px rgba(148,163,184,.14);
     }
+    .week-day span{display:block;line-height:1}
     .week-day.done{color:#047857}
     .week-day.today{color:#2563EB}
     .week-day.done .week-bar{
@@ -435,7 +440,6 @@
     .week-day.done .week-day-icon{
       color:#fff;
       background:linear-gradient(135deg,#34D399 0%,#10B981 100%);
-      transform:translateY(-1px);
       box-shadow:0 8px 16px rgba(16,185,129,.22);
     }
     .week-day.today .week-day-icon{
@@ -444,7 +448,7 @@
       box-shadow:inset 0 0 0 2px rgba(37,99,235,.22);
     }
     .week-day.today .week-bar{
-      outline:2px solid rgba(37,99,235,.22);
+      outline:2px solid rgba(37,99,235,.26);
       outline-offset:2px;
     }
     .achievement-card{
@@ -1897,12 +1901,11 @@ function renderWeeklyOverview(){
     const done = doneSet.has(date);
     const isToday = date === todayStr;
     const kind = getPlanKind(date);
-    const height = done ? 28 + index * 3 : 18;
     const dayIcon = kind === 'strength' ? 'strength' : kind === 'walk' ? 'walk' : 'recovery';
     return `
       <div class="week-day ${done ? 'done' : ''} ${isToday ? 'today' : ''}" aria-label="${date}${done ? '已完成' : '未完成'}">
         <div class="week-day-icon">${iconSvg(done ? 'check' : dayIcon)}</div>
-        <div class="week-bar" style="height:${height}px"></div>
+        <div class="week-bar"></div>
         <span>${labels[index]}</span>
       </div>
     `;
