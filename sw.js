@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-image-cache-fix';
+const CACHE_NAME = 'back-safe-checkin-v20260513-achievement-icon-cache-fix';
 const APP_SHELL = [
   './',
   './index.html',
@@ -44,7 +44,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if(url.pathname.includes('/assets/exercises/')){
+  if(url.pathname.includes('/assets/exercises/') || url.pathname.includes('/assets/icons/achievement-')){
     event.respondWith(networkFirstAsset(request));
     return;
   }

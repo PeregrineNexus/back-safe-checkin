@@ -31,7 +31,7 @@
       --motion-spring:cubic-bezier(.22,1,.36,1);
       --page-bg:none;
       --status-bg:none;
-      --app-version:"2026.05.13-image-cache-fix";
+      --app-version:"2026.05.13-achievement-icon-cache-fix";
     }
     html{
       background:#FFFFFF;
@@ -498,8 +498,18 @@
       object-fit:contain;
       filter:drop-shadow(0 10px 14px rgba(4,120,87,.2));
     }
+    .achievement-image-icon.svg-fallback svg{
+      width:72%;
+      height:72%;
+      display:block;
+      filter:drop-shadow(0 10px 14px rgba(4,120,87,.14));
+    }
     .badge-icon.achievement-image-icon img{
       transform:scale(1.1);
+    }
+    .badge-icon.achievement-image-icon.svg-fallback svg{
+      width:52px;
+      height:52px;
     }
     .badge-grid{
       position:relative;
@@ -1341,7 +1351,7 @@ const weekNames = ['周日','周一','周二','周三','周四','周五','周六
 document.getElementById('dateTitle').textContent = `${today.getMonth()+1}月${today.getDate()}日 ${weekNames[weekday]}`;
 
 const ILLUSTRATION_ASPECT = 16 / 9;
-const ASSET_VERSION = '20260513-image-cache-fix';
+const ASSET_VERSION = '20260513-achievement-icon-cache-fix';
 const exerciseImageTypes = ['deadbug','bridge','birddog','boxsquat','clam','mcgill','row','sideplank','step','wall','walk','stretch'];
 const exerciseAltNames = {
   deadbug:'死虫式',
@@ -1662,6 +1672,22 @@ function recoverExerciseImage(img){
   img.replaceWith(placeholder);
 }
 
+function recoverAchievementImage(img){
+  const attempts = Number(img.dataset.retry || 0);
+  const originalSrc = img.dataset.originalSrc;
+  if(originalSrc && attempts < 2){
+    img.dataset.retry = String(attempts + 1);
+    const separator = originalSrc.includes('?') ? '&' : '?';
+    img.src = `${originalSrc}${separator}v=${ASSET_VERSION}&retry=${Date.now()}`;
+    return;
+  }
+
+  const holder = img.closest('.achievement-image-icon');
+  if(!holder) return;
+  holder.classList.add('svg-fallback');
+  holder.innerHTML = iconSvg(img.dataset.fallbackIcon || 'spark');
+}
+
 function getPhotoAspect(type){
   return exercisePhotoMap[type] ? ILLUSTRATION_ASPECT : 4 / 3;
 }
@@ -1826,7 +1852,8 @@ function achievementIcon(name){
     walk:'assets/icons/achievement-walk.png',
     spark:'assets/icons/achievement-perfect-week.png'
   };
-  return `<img src="${icons[name] || icons.trophy}" alt="" loading="lazy" decoding="async">`;
+  const src = icons[name] || icons.trophy;
+  return `<img src="${versionedAssetSrc(src)}" data-original-src="${src}" data-fallback-icon="${name}" alt="" loading="lazy" decoding="async" onerror="recoverAchievementImage(this)">`;
 }
 
 function getPlanKind(date){
