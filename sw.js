@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-restore-monday';
+const CACHE_NAME = 'back-safe-checkin-v20260513-backup-tools';
 const APP_SHELL = [
   './',
   './index.html',

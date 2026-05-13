@@ -943,6 +943,7 @@
     }
     .checkin:focus-visible,
     .mini-btn:focus-visible,
+    .backup-btn:focus-visible,
     .nav-btn:focus-visible,
     .exercise-top:focus-visible,
     .carousel-btn:focus-visible,
@@ -1034,6 +1035,60 @@
       letter-spacing:-.2px;
     }
     .calendar-empty{padding:10px 4px;color:#64748B;font-size:14px;font-weight:700}
+    .backup-card{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-top:14px;
+      padding:15px;
+      border:1px solid rgba(226,232,240,.86);
+      border-radius:24px;
+      background:
+        radial-gradient(circle at 92% 10%, rgba(59,130,246,.10), transparent 32%),
+        linear-gradient(135deg,#FFFFFF 0%,#F8FBFF 100%);
+      box-shadow:0 10px 24px rgba(15,23,42,.05);
+    }
+    .backup-title{
+      margin-bottom:4px;
+      color:#0F172A;
+      font-size:15px;
+      font-weight:950;
+    }
+    .backup-desc{
+      color:#64748B;
+      font-size:12px;
+      font-weight:750;
+      line-height:1.55;
+    }
+    .backup-actions{
+      flex:0 0 auto;
+      display:flex;
+      gap:8px;
+    }
+    .backup-btn{
+      border:none;
+      border-radius:14px;
+      padding:9px 11px;
+      background:#EFF6FF;
+      color:#1D4ED8;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+    .backup-btn.primary{
+      background:#ECFDF5;
+      color:#047857;
+    }
+    .backup-status{
+      margin-top:8px;
+      color:#64748B;
+      font-size:12px;
+      font-weight:800;
+    }
+    .backup-status.success{color:#047857}
+    .backup-status.error{color:#B45309}
     .nav{
       position:absolute;
       left:0;
@@ -1117,6 +1172,9 @@
       .summary-side{flex-direction:row;justify-content:space-between;align-items:center}
       .summary-value{font-size:30px}
       .carousel-btn{width:36px;height:36px}
+      .backup-card{align-items:flex-start;flex-direction:column}
+      .backup-actions{width:100%}
+      .backup-btn{flex:1}
     }
   </style>
 </head>
@@ -1232,6 +1290,18 @@
             <div class="week"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
             <div class="days" id="days"></div>
             <div class="detail" id="dayDetail" aria-live="polite"><div class="detail-hint">点击某一天查看当天训练详情。</div></div>
+          </div>
+          <div class="backup-card">
+            <div>
+              <div class="backup-title">数据备份</div>
+              <div class="backup-desc">导出打卡记录，换浏览器或记录异常时可导入恢复。</div>
+              <div class="backup-status" id="backupStatus" aria-live="polite"></div>
+            </div>
+            <div class="backup-actions">
+              <button class="backup-btn primary" id="exportBackupBtn" type="button">导出</button>
+              <button class="backup-btn" id="importBackupBtn" type="button">导入</button>
+              <input id="importBackupInput" type="file" accept="application/json,.json" hidden>
+            </div>
           </div>
         </section>
       </div>
@@ -1452,6 +1522,66 @@ function saveHistory(arr){
   safeStorageSet(BACKUP_KEY, payload);
 }
 function getRecord(date){return history().find(r=>r.date===date)}
+function extractImportedHistory(value){
+  if(Array.isArray(value)) return normalizeHistoryValue(value);
+  if(value && typeof value === 'object'){
+    if(Array.isArray(value.records)) return normalizeHistoryValue(value.records);
+    if(value.history) return normalizeHistoryValue(value.history);
+    if(value.data) return normalizeHistoryValue(value.data);
+    return normalizeHistoryValue(value);
+  }
+  return [];
+}
+function showBackupStatus(message, type = ''){
+  const el = document.getElementById('backupStatus');
+  if(!el) return;
+  el.textContent = message;
+  el.className = `backup-status ${type}`.trim();
+}
+function exportCheckinBackup(){
+  const records = history();
+  const payload = {
+    app:'back-safe-checkin',
+    version:1,
+    exportedAt:new Date().toISOString(),
+    records
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `back-safe-checkin-${formatLocalDate(new Date())}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  showBackupStatus(`已导出 ${records.length} 条记录。`, 'success');
+}
+function importCheckinBackup(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const imported = extractImportedHistory(JSON.parse(String(reader.result || 'null')));
+      if(!imported.length){
+        showBackupStatus('没有识别到可导入的打卡记录。', 'error');
+        return;
+      }
+      const merged = normalizeHistoryList([...history(), ...imported]);
+      saveHistory(merged);
+      renderCalendar();
+      updateProgress();
+      showBackupStatus(`已导入并合并 ${imported.length} 条记录。`, 'success');
+    } catch (error){
+      console.warn('导入打卡备份失败。', error);
+      showBackupStatus('导入失败，请确认文件是打卡备份 JSON。', 'error');
+    }
+  };
+  reader.onerror = ()=>{
+    showBackupStatus('读取文件失败，请重新选择。', 'error');
+  };
+  reader.readAsText(file);
+}
 function clamp(num, min, max){return Math.max(min, Math.min(max, num))}
 function addDays(date, days){
   const next = new Date(date);
@@ -2036,6 +2166,18 @@ navButtons.forEach(btn=>{
 document.addEventListener('pointerdown', handleDelegatedInteraction, true);
 document.addEventListener('mousedown', handleDelegatedInteraction, true);
 document.addEventListener('click', handleDelegatedInteraction, true);
+
+const exportBackupBtn = document.getElementById('exportBackupBtn');
+const importBackupBtn = document.getElementById('importBackupBtn');
+const importBackupInput = document.getElementById('importBackupInput');
+if(exportBackupBtn) exportBackupBtn.addEventListener('click', exportCheckinBackup);
+if(importBackupBtn && importBackupInput){
+  importBackupBtn.addEventListener('click', ()=>importBackupInput.click());
+  importBackupInput.addEventListener('change', ()=>{
+    importCheckinBackup(importBackupInput.files?.[0]);
+    importBackupInput.value = '';
+  });
+}
 
 window.addEventListener('resize', ()=>requestAnimationFrame(()=>syncNavFromActivePage()), {passive:true});
 if(window.visualViewport){
