@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-restore-may-12';
+const CACHE_NAME = 'back-safe-checkin-v20260513-carousel-surface-fix';
 const APP_SHELL = [
   './',
   './index.html',

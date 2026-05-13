@@ -31,7 +31,7 @@
       --motion-spring:cubic-bezier(.22,1,.36,1);
       --page-bg:none;
       --status-bg:none;
-      --app-version:"2026.05.13-restore-may-12";
+      --app-version:"2026.05.13-carousel-surface-fix";
     }
     html{
       background:#FFFFFF;
@@ -664,7 +664,16 @@
       opacity:1;
       transform:none;
     }
-    .carousel{position:relative;margin-bottom:12px}
+    .carousel{
+      position:relative;
+      margin-bottom:12px;
+      padding:0 0 12px;
+      border:1px solid #E5EAF3;
+      border-radius:24px;
+      background:linear-gradient(180deg,#FFFFFF 0%,#F8FAFC 100%);
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
+      overflow:hidden;
+    }
     .photo-frame{
       position:relative;
       overflow:hidden;
@@ -678,10 +687,10 @@
     .slide{min-width:100%}
     .photo-card{
       overflow:hidden;
-      border:1px solid #E5EAF3;
-      border-radius:24px;
-      background:#fff;
-      box-shadow:0 10px 22px rgba(15,23,42,.06);
+      border:0;
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
     }
     .photo-stage{
       position:relative;
@@ -702,7 +711,12 @@
       text-align:center;
       padding:20px;
     }
-    .caption{padding:12px 14px 14px;background:#fff;border-top:1px solid #E7EDF7}
+    .caption{
+      min-height:82px;
+      padding:12px 14px 14px;
+      background:linear-gradient(180deg,#FFFFFF 0%,#FBFDFF 100%);
+      border-top:1px solid #E7EDF7;
+    }
     .caption-title{font-size:14px;font-weight:900}
     .caption-sub{margin-top:4px;font-size:12px;line-height:1.6;color:#64748B;font-weight:600}
     .carousel-btn{
@@ -722,7 +736,7 @@
     }
     .carousel-btn.prev{left:10px}
     .carousel-btn.next{right:10px}
-    .dots{display:flex;justify-content:center;gap:7px;margin-top:10px}
+    .dots{display:flex;justify-content:center;gap:7px;margin-top:0}
     .dot{width:7px;height:7px;border-radius:99px;background:#CBD5E1}
     .dot.active{background:#2563EB}
     .steps{
