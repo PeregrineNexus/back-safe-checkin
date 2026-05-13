@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-actions-secrets-check';
+const CACHE_NAME = 'back-safe-checkin-v20260513-actions-auto-live';
 const APP_SHELL = [
   './',
   './index.html',
