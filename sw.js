@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-backup-tools';
+const CACHE_NAME = 'back-safe-checkin-v20260513-white-page-bg';
 const APP_SHELL = [
   './',
   './index.html',
