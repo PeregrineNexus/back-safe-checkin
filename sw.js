@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-eager-image-load';
+const CACHE_NAME = 'back-safe-checkin-v20260513-restore-may-12';
 const APP_SHELL = [
   './',
   './index.html',
