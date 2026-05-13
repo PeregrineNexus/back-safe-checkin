@@ -31,7 +31,7 @@
       --motion-spring:cubic-bezier(.22,1,.36,1);
       --page-bg:none;
       --status-bg:none;
-      --app-version:"2026.05.13-achievement-icon-cache-fix";
+      --app-version:"2026.05.13-eager-image-load";
     }
     html{
       background:#FFFFFF;
@@ -1351,7 +1351,7 @@ const weekNames = ['周日','周一','周二','周三','周四','周五','周六
 document.getElementById('dateTitle').textContent = `${today.getMonth()+1}月${today.getDate()}日 ${weekNames[weekday]}`;
 
 const ILLUSTRATION_ASPECT = 16 / 9;
-const ASSET_VERSION = '20260513-achievement-icon-cache-fix';
+const ASSET_VERSION = '20260513-eager-image-load';
 const exerciseImageTypes = ['deadbug','bridge','birddog','boxsquat','clam','mcgill','row','sideplank','step','wall','walk','stretch'];
 const exerciseAltNames = {
   deadbug:'死虫式',
@@ -1652,7 +1652,7 @@ function versionedAssetSrc(src){
 
 function renderExerciseImage(photo, size){
   if(!photo) return createPlaceholderHtml(size);
-  return `<img src="${versionedAssetSrc(photo.src)}" data-original-src="${photo.src}" alt="${photo.alt}" loading="lazy" decoding="async" onerror="recoverExerciseImage(this)">`;
+  return `<img src="${versionedAssetSrc(photo.src)}" data-original-src="${photo.src}" alt="${photo.alt}" loading="eager" decoding="async" onerror="recoverExerciseImage(this)">`;
 }
 
 function recoverExerciseImage(img){
@@ -1853,7 +1853,7 @@ function achievementIcon(name){
     spark:'assets/icons/achievement-perfect-week.png'
   };
   const src = icons[name] || icons.trophy;
-  return `<img src="${versionedAssetSrc(src)}" data-original-src="${src}" data-fallback-icon="${name}" alt="" loading="lazy" decoding="async" onerror="recoverAchievementImage(this)">`;
+  return `<img src="${versionedAssetSrc(src)}" data-original-src="${src}" data-fallback-icon="${name}" alt="" loading="eager" decoding="async" onerror="recoverAchievementImage(this)">`;
 }
 
 function getPlanKind(date){
