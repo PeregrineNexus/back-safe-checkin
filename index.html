@@ -1301,6 +1301,10 @@ const slideState = {};
 const KEY = 'pretty_back_checkin_history_v3';
 const BACKUP_KEY = 'pretty_back_checkin_history_v3_backup';
 const MIGRATION_KEY = 'pretty_back_checkin_history_v3_migrated';
+const RESTORE_KEY_PREFIX = 'pretty_back_checkin_history_v3_restored_';
+const REQUIRED_HISTORY_RESTORES = [
+  {date:'2026-05-11', note:'已恢复星期一打卡记录'}
+];
 const LEGACY_HISTORY_KEYS = [
   'pretty_back_checkin_history_v2',
   'pretty_back_checkin_history',
@@ -1399,6 +1403,23 @@ function recoverLegacyHistory(){
   return normalizeHistoryList(records);
 }
 
+function applyRequiredHistoryRestores(records){
+  const existingDates = new Set(records.map(record=>record.date));
+  const restored = [];
+  REQUIRED_HISTORY_RESTORES.forEach(item=>{
+    const restoreKey = `${RESTORE_KEY_PREFIX}${item.date}`;
+    if(existingDates.has(item.date) || safeStorageGet(restoreKey) === '1') return;
+    restored.push({
+      date:item.date,
+      plan:planForDate(item.date).name,
+      status:3,
+      note:item.note
+    });
+    safeStorageSet(restoreKey, '1');
+  });
+  return restored.length ? normalizeHistoryList([...records, ...restored]) : records;
+}
+
 function history(){
   const raw = safeStorageGet(KEY);
   const records = parseHistoryValue(raw, KEY);
@@ -1406,7 +1427,7 @@ function history(){
   const backupRecords = parseHistoryValue(backupRaw, BACKUP_KEY);
   const shouldScanLegacy = safeStorageGet(MIGRATION_KEY) !== '1';
   const legacyRecords = shouldScanLegacy ? recoverLegacyHistory() : [];
-  const mergedRecords = normalizeHistoryList([...records, ...backupRecords, ...legacyRecords]);
+  const mergedRecords = applyRequiredHistoryRestores(normalizeHistoryList([...records, ...backupRecords, ...legacyRecords]));
 
   if(shouldScanLegacy){
     safeStorageSet(MIGRATION_KEY, '1');

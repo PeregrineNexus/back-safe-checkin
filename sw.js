@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-history-merge';
+const CACHE_NAME = 'back-safe-checkin-v20260513-restore-monday';
 const APP_SHELL = [
   './',
   './index.html',
