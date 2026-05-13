@@ -1402,28 +1402,25 @@ function recoverLegacyHistory(){
 function history(){
   const raw = safeStorageGet(KEY);
   const records = parseHistoryValue(raw, KEY);
-  if(records.length || isExplicitEmptyHistory(raw)){
-    if(records.length && safeStorageGet(BACKUP_KEY) !== JSON.stringify(records)){
-      safeStorageSet(BACKUP_KEY, JSON.stringify(records));
-    }
-    return records;
-  }
-
   const backupRaw = safeStorageGet(BACKUP_KEY);
   const backupRecords = parseHistoryValue(backupRaw, BACKUP_KEY);
-  if(backupRecords.length){
-    saveHistory(backupRecords);
-    return backupRecords;
+  const shouldScanLegacy = safeStorageGet(MIGRATION_KEY) !== '1';
+  const legacyRecords = shouldScanLegacy ? recoverLegacyHistory() : [];
+  const mergedRecords = normalizeHistoryList([...records, ...backupRecords, ...legacyRecords]);
+
+  if(shouldScanLegacy){
+    safeStorageSet(MIGRATION_KEY, '1');
   }
 
-  if(safeStorageGet(MIGRATION_KEY) !== '1'){
-    const legacyRecords = recoverLegacyHistory();
-    safeStorageSet(MIGRATION_KEY, '1');
-    if(legacyRecords.length){
-      saveHistory(legacyRecords);
-      return legacyRecords;
+  if(mergedRecords.length){
+    const payload = JSON.stringify(mergedRecords);
+    if(raw !== payload || backupRaw !== payload){
+      saveHistory(mergedRecords);
     }
+    return mergedRecords;
   }
+
+  if(isExplicitEmptyHistory(raw) || isExplicitEmptyHistory(backupRaw)) return [];
   return [];
 }
 

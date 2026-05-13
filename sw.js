@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260512-achievement-soft-card';
+const CACHE_NAME = 'back-safe-checkin-v20260513-history-merge';
 const APP_SHELL = [
   './',
   './index.html',
