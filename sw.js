@@ -1,4 +1,4 @@
-const CACHE_NAME = 'back-safe-checkin-v20260513-week-bars-unified';
+const CACHE_NAME = 'back-safe-checkin-v20260514-sticker-theme';
 const APP_SHELL = [
   './',
   './index.html',

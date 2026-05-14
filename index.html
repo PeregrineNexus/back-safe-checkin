@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#FFFFFF" />
+  <meta name="theme-color" content="#F7F3E7" />
   <meta name="color-scheme" content="light only" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -31,7 +31,14 @@
       --motion-spring:cubic-bezier(.22,1,.36,1);
       --page-bg:none;
       --status-bg:none;
-      --app-version:"2026.05.13-week-bars-unified";
+      --ink:#050505;
+      --cream:#F7F3E7;
+      --paper:#FFFDF4;
+      --sun:#FFD816;
+      --mint:#03BD70;
+      --pink:#F39BCB;
+      --orange:#FF8A00;
+      --app-version:"2026.05.14-sticker-theme";
     }
     html{
       background:#FFFFFF;
@@ -1182,6 +1189,364 @@
       color:#0F172A;
       font-weight:950;
       letter-spacing:.02em;
+    }
+
+    /* Sticker habit theme: a reversible visual layer inspired by playful check-in apps. */
+    html,
+    body,
+    body::before,
+    .shell,
+    .app-shell,
+    .app{
+      background:
+        radial-gradient(circle at 18px 18px, rgba(5,5,5,.035) 0 2px, transparent 2.5px),
+        var(--cream);
+      background-size:34px 34px, auto;
+    }
+    body{
+      font-family:"Avenir Next","PingFang SC","Microsoft YaHei",sans-serif;
+    }
+    .app{
+      padding-top:20px;
+    }
+    .eyebrow,
+    .card-kicker,
+    .calendar-plan-kicker{
+      color:rgba(5,5,5,.58);
+      font-weight:1000;
+      letter-spacing:.08em;
+    }
+    h1,
+    h2,
+    .date-title,
+    .section-head h2,
+    .card-title,
+    .summary-value,
+    .exercise-title,
+    .month-title,
+    .food-title,
+    .calendar-plan-date{
+      color:var(--ink);
+      font-weight:1000;
+      letter-spacing:-.8px;
+    }
+    .summary,
+    .weekly-card,
+    .achievement-card,
+    .nutrition-hero,
+    .food-card,
+    .food-reminder,
+    .calendar-card,
+    .backup-card,
+    .exercise{
+      border:2px solid var(--ink);
+      box-shadow:0 7px 0 var(--ink), 0 18px 34px rgba(5,5,5,.12);
+    }
+    .summary{
+      border-radius:30px;
+      background:var(--sun);
+      color:var(--ink);
+    }
+    .summary.done{
+      background:var(--mint);
+      box-shadow:0 7px 0 var(--ink), 0 18px 34px rgba(3,189,112,.22);
+    }
+    .summary::after{
+      right:-40px;
+      top:-42px;
+      background:var(--pink);
+      opacity:1;
+      border:2px solid var(--ink);
+      box-shadow:0 7px 0 rgba(5,5,5,.18);
+    }
+    .summary.done::after{
+      background:var(--sun);
+    }
+    .summary-title,
+    .summary.done .summary-title,
+    .summary-desc,
+    .summary.done .summary-desc{
+      color:rgba(5,5,5,.68);
+      font-weight:900;
+    }
+    .summary-status,
+    .summary.done .summary-status{
+      border:2px solid var(--ink);
+      background:var(--paper);
+      color:var(--ink);
+      box-shadow:0 3px 0 var(--ink);
+    }
+    .ring,
+    .summary.done .ring{
+      border:2px solid var(--ink);
+      background:conic-gradient(var(--mint) var(--deg), rgba(5,5,5,.12) 0deg);
+      box-shadow:0 6px 0 var(--ink);
+    }
+    .ring-inner,
+    .summary.done .ring-inner{
+      background:var(--ink);
+      color:#fff;
+    }
+    .checkin,
+    .checkin.done{
+      border:2px solid var(--ink);
+      border-radius:18px;
+      background:var(--paper);
+      color:var(--ink);
+      box-shadow:0 5px 0 var(--ink);
+    }
+    .checkin.done{
+      background:var(--sun);
+    }
+    .weekly-card,
+    .nutrition-hero{
+      background:var(--paper);
+    }
+    .weekly-card::after,
+    .nutrition-hero::after{
+      background:var(--mint);
+      border:2px solid var(--ink);
+      opacity:.9;
+    }
+    .achievement-card{
+      background:linear-gradient(135deg,#FFFDF4 0%,#FFF1B8 100%);
+      border-color:var(--ink);
+    }
+    .achievement-card::after{
+      background:var(--sun);
+      border:2px solid var(--ink);
+      opacity:.55;
+    }
+    .card-feature-icon,
+    .nutrition-ring,
+    .food-icon,
+    .stat-icon{
+      border:2px solid var(--ink);
+      background:var(--mint);
+      color:#fff;
+      box-shadow:0 4px 0 var(--ink);
+    }
+    .nutrition-ring{
+      background:var(--mint);
+      color:var(--ink);
+      font-size:28px;
+    }
+    .card-sub,
+    .exercise-sub,
+    .food-card ul,
+    .backup-desc,
+    .calendar-plan-name,
+    .detail{
+      color:rgba(5,5,5,.62);
+      font-weight:850;
+    }
+    .stat-pill,
+    .reminder-item{
+      border:2px solid var(--ink);
+      border-radius:20px;
+      background:#fff;
+      box-shadow:0 4px 0 var(--ink);
+      color:var(--ink);
+    }
+    .stat-pill strong,
+    .reminder-item strong{
+      color:var(--ink);
+      font-weight:1000;
+    }
+    .week-bars{
+      border:2px solid var(--ink);
+      background:#fff;
+      box-shadow:0 4px 0 var(--ink);
+    }
+    .week-day-icon,
+    .week-bar{
+      border:2px solid var(--ink);
+      background:#fff;
+      box-shadow:none;
+    }
+    .week-day.done .week-day-icon,
+    .week-day.done .week-bar{
+      background:var(--mint);
+      color:#fff;
+      box-shadow:none;
+    }
+    .week-day.today .week-day-icon{
+      background:var(--pink);
+      color:var(--ink);
+      box-shadow:0 0 0 4px rgba(243,155,203,.28);
+    }
+    .week-day.today .week-bar{
+      outline:3px solid var(--pink);
+      outline-offset:2px;
+    }
+    .food-card,
+    .food-reminder,
+    .calendar-card,
+    .backup-card{
+      background:var(--paper);
+    }
+    .food-card:nth-child(2n){
+      background:#E9FFF4;
+    }
+    .food-card:nth-child(3n){
+      background:#FFF0F8;
+    }
+    .food-card::after{
+      background:var(--sun);
+      border:2px solid var(--ink);
+      opacity:.55;
+    }
+    .food-tag,
+    .chip,
+    .calendar-plan-status,
+    .backup-btn,
+    .mini-btn{
+      border:2px solid var(--ink);
+      border-radius:999px;
+      background:#fff;
+      color:var(--ink);
+      box-shadow:0 3px 0 var(--ink);
+      font-weight:1000;
+    }
+    .food-tag.green,
+    .chip.blue,
+    .backup-btn.primary,
+    .calendar-plan-status.done{
+      background:var(--mint);
+      color:#fff;
+    }
+    .food-tag.blue{
+      background:#CFE2FF;
+      color:var(--ink);
+    }
+    .food-tag.amber,
+    .calendar-plan-status{
+      background:var(--sun);
+      color:var(--ink);
+    }
+    .exercise{
+      border-radius:26px;
+      background:var(--paper);
+    }
+    .exercise.open{
+      border-color:var(--ink);
+      box-shadow:0 7px 0 var(--ink), 0 18px 34px rgba(5,5,5,.14);
+    }
+    .exercise-top:active{
+      background:rgba(255,216,22,.18);
+    }
+    .thumb{
+      border:2px solid var(--ink);
+      border-radius:20px;
+      background:#fff;
+      box-shadow:0 4px 0 var(--ink);
+    }
+    .chevron{
+      color:var(--ink);
+    }
+    .exercise.open .chevron{
+      color:var(--mint);
+    }
+    .carousel,
+    .steps,
+    .warning,
+    .calendar-plan-header,
+    .detail-hint{
+      border:2px solid var(--ink);
+      background:#fff;
+      box-shadow:0 4px 0 var(--ink);
+    }
+    .caption{
+      border-top:2px solid var(--ink);
+      background:#fff;
+    }
+    .carousel-btn{
+      border:2px solid var(--ink);
+      background:var(--ink);
+      color:#fff;
+      box-shadow:0 4px 0 rgba(5,5,5,.45);
+    }
+    .dot{
+      width:8px;
+      height:8px;
+      border:1.5px solid var(--ink);
+      background:#fff;
+    }
+    .dot.active{
+      background:var(--mint);
+    }
+    .warning{
+      background:#FFF0F8;
+      color:var(--ink);
+    }
+    .calendar-plan-header::before{
+      display:none;
+    }
+    .mini-btn{
+      padding:8px 12px;
+    }
+    .day{
+      min-height:56px;
+      border:2px solid var(--ink);
+      border-radius:17px;
+      background:#fff;
+      box-shadow:0 3px 0 var(--ink);
+    }
+    .day.today{
+      border-color:var(--ink);
+      background:#FFF5BF;
+    }
+    .day.checked{
+      border-color:var(--ink);
+      background:#DFFFEF;
+      box-shadow:0 3px 0 var(--ink);
+    }
+    .day.checked::after{
+      right:5px;
+      bottom:5px;
+      border:2px solid var(--ink);
+      background:var(--mint);
+      color:#fff;
+      box-shadow:none;
+    }
+    .day.selected,
+    .day.selected.checked{
+      outline:3px solid var(--pink);
+      outline-offset:2px;
+      box-shadow:0 3px 0 var(--ink), 0 0 0 6px rgba(243,155,203,.18);
+    }
+    .daydot,
+    .daydot.s3{
+      width:8px;
+      height:8px;
+      border:1.5px solid var(--ink);
+      background:#fff;
+      box-shadow:none;
+    }
+    .daydot.s3{
+      width:20px;
+      background:var(--mint);
+    }
+    .nav{
+      background:linear-gradient(180deg,rgba(247,243,231,0) 0%, rgba(247,243,231,.92) 32%, var(--cream) 100%);
+    }
+    .nav-inner{
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:0 6px 0 var(--ink), 0 16px 30px rgba(5,5,5,.14);
+    }
+    .nav-pill{
+      top:0;
+      border:2px solid var(--ink);
+      background:var(--sun);
+      box-shadow:0 4px 0 var(--ink);
+    }
+    .nav-btn{
+      color:rgba(5,5,5,.58);
+      font-weight:1000;
+    }
+    .nav-btn.active{
+      color:var(--ink);
     }
     @media (prefers-reduced-motion:reduce){
       *,*::before,*::after{
